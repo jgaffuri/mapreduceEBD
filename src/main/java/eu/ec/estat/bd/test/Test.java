@@ -18,7 +18,8 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 
-		Job job = new Job();
+		//Job job = new Job();
+		Job job = Job.getInstance();
 		job.setJarByClass(Test.class);
 		job.setJobName("Count letters");
 
