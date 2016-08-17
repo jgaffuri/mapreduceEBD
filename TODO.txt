@@ -1,3 +1,3 @@
-fix mvn compile once jdk is installed
-compile and deploy test job to cluster with hue and run it
+write mvn deploy
+find test case. with wikipedia data? other?
 
