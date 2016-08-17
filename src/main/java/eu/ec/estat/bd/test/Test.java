@@ -3,6 +3,8 @@
  */
 package eu.ec.estat.bd.test;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -18,20 +20,25 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 
-		//Job job = new Job();
-		Job job = Job.getInstance();
+		//build job
+		Configuration conf = new Configuration();
+		Job job = Job.getInstance(conf);
 		job.setJarByClass(Test.class);
 		job.setJobName("Count letters");
 
-		FileInputFormat.addInputPath(job, new Path("/user/gaffuju/test/test.txt"));
-		FileOutputFormat.setOutputPath(job, new Path("/user/gaffuju/test/output.txt"));
-
 		job.setMapperClass(TestMapper.class);
-		//job.setCombinerClass(TestReducer.class);
+		job.setCombinerClass(TestReducer.class);
 		job.setReducerClass(TestReducer.class);
-
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
+
+		//set input path
+		FileInputFormat.addInputPath(job, new Path("/user/gaffuju/test/test.txt"));
+
+		//set output path
+		Path outputPath = new Path("/user/gaffuju/test/output");
+		FileSystem.get(conf).delete(outputPath, true);
+		FileOutputFormat.setOutputPath(job, outputPath);
 
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}

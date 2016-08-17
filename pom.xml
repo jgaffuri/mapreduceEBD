@@ -28,7 +28,7 @@
 					<fork>true</fork>
 					<showDeprecation>true</showDeprecation>
 					<showWarnings>true</showWarnings>
-					<!--<executable>java -jar H:\.m2\repository\org\eclipse\jdt\core\compiler\ecj\4.5.1\ecj-4.5.1.jar</executable> -->
+					<!--<executable>C:\Program Files\Java\jdk1.8.0_71\bin\javac.exe</executable> -->
 					<compilerVersion>1.6</compilerVersion>
 				</configuration>
 			</plugin>
