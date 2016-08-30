@@ -81,7 +81,7 @@ public class PhotoSearch {
 		getList();
 
 		try {
-			new File(path).mkdir();
+			new File(path).mkdirs();
 			File outFile_ = new File(path+fileName);
 			if(outFile_.exists()) outFile_.delete();
 

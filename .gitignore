@@ -4,3 +4,4 @@
 *.class
 /target/
 /src/main/java/eu/ec/estat/bd/Config.java
+/out/
