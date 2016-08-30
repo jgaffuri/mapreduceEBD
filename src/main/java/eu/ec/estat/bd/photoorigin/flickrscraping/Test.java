@@ -41,8 +41,7 @@ public class Test {
 			System.out.println(photo);
 		System.out.println(photos.size());*/
 
-		Photo photo = new Photo();
-		photo.id="19527571594"; photo.owner="36049946@N03"; photo.secret="7022d8922a";
+		Photo photo = new Photo("19527571594", "36049946@N03", "7022d8922a");
 		photo.retrieveInfo();
 		System.out.println(photo);
 
@@ -82,11 +81,7 @@ public class Test {
 			NodeList photoList = photosElt.getElementsByTagName("photo");
 			for(int i=0; i<photoList.getLength(); i++){
 				Element photoElt = (Element) photoList.item(i);
-				Photo photo = new Photo();
-				photo.id = photoElt.getAttribute("id");
-				photo.owner = photoElt.getAttribute("owner");
-				photo.secret = photoElt.getAttribute("secret");
-				photos.add(photo);
+				photos.add( new Photo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret")) );
 			}
 		}
 		return photos;
@@ -97,6 +92,10 @@ public class Test {
 		String id, owner, secret, date, ownerlocation;
 		double lat, lon;
 
+		public Photo(String id, String owner, String secret){
+			this.id=id; this.owner=owner; this.secret=secret;
+		}
+		
 		@Override
 		public String toString() { return id+" "+owner+" "+ownerlocation+" "+" "+secret+" "+date+" "+lat+" "+lon; }
 
