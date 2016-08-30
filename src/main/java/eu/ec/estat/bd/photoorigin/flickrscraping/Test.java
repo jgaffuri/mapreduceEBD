@@ -22,53 +22,29 @@ public class Test {
 
 	private static final String URL_BASE = "https://api.flickr.com/services/rest/";
 
-	/*
-//search photo
-https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.photos.search
-&format=json&content_type=1&has_geo=1
-&content_type=1
-&has_geo=1
-&min_taken_date
-&max_taken_date
-&bbox=minimum_longitude,minimum_latitude,maximum_longitude,maximum_latitude
-&lat=
-&lon=
-&radius= (in km, max=32km)
-&woe_id= A 32-bit identifier that uniquely represents spatial entities. (not used if bbox argument is present).
-&place_id=A Flickr place id
-&accuracy=World level is 1,Country is ~3,Region is ~6,City is ~11,Street is ~16
-&text= free text
-&tags=paris,france
-&tag_mode=any|all
-&sort=date-posted-asc|date-posted-desc|date-taken-asc|date-taken-desc|interestingness-desc|interestingness-asc|relevance
-&per_page=500
-&page=1
-
-//get info on photo
-https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.photos.getInfo&photo_id=29238337811&secret=c2466316c5
-
-//Get information about a user
-https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.people.getInfo&user_id=98614865@N05
-
-	 *
-	 */
-
+	//Get information about a user
+	//https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.people.getInfo&user_id=36049946@N03
 
 
 	public static void main(String[] args) {
 		System.out.println("Start");
 		Config.init();
 
-		Collection<Photo> photos = getPhotosList(
+		/*Collection<Photo> photos = getPhotosList(
 				43.695949, 7.271413, 5, //nice
 				//"lat", "49.611622", "lon", "6.131935", "radius", "10", //luxembourg
-				"2016-07-15", "2016-08-01"
+				"2015-07-15", "2015-08-01"
 				);
 
 		System.out.println(photos.size());
 		for(Photo photo : photos)
 			System.out.println(photo);
-		System.out.println(photos.size());
+		System.out.println(photos.size());*/
+
+		Photo photo = new Photo();
+		photo.id="19527571594"; photo.owner="36049946@N03"; photo.secret="7022d8922a";
+		photo.retrieveInfo();
+		System.out.println(photo);
 
 		System.out.println("End");
 	}
@@ -118,10 +94,45 @@ https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&m
 
 
 	public static class Photo {
-		String id, owner, secret;
+		String id, owner, secret, date, ownerlocation;
+		double lat, lon;
 
 		@Override
-		public String toString() { return id+" "+owner+" "+" "+secret; }
+		public String toString() { return id+" "+owner+" "+ownerlocation+" "+" "+secret+" "+date+" "+lat+" "+lon; }
+
+		public void retrieveInfo() {
+			//https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.photos.getInfo&format=rest&photo_id=19527571594&secret=7022d8922a
+
+			String url = IOUtil.getURL(URL_BASE, "api_key", Config.API_KEY, "method", "flickr.photos.getInfo", "format", "rest", "photo_id", id, "secret", secret);
+			//System.out.println(url);
+
+			Document xml = XML.parseXMLfromURL(url);
+
+			Element mainElt = (Element)xml.getChildNodes().item(0);
+			String status = mainElt.getAttribute("stat");
+			if(!status.equals("ok")){
+				System.out.println("Could not get data from url: "+url);
+				System.out.println("Status = "+status);
+				return;
+			}
+
+			mainElt = (Element) mainElt.getElementsByTagName("photo").item(0);
+			Element elt;
+
+			//location
+			elt = (Element) mainElt.getElementsByTagName("location").item(0);
+			lat = Double.parseDouble(elt.getAttribute("latitude"));
+			lon = Double.parseDouble(elt.getAttribute("longitude"));
+
+			//date
+			elt = (Element) mainElt.getElementsByTagName("dates").item(0);
+			date = elt.getAttribute("taken");
+
+			//ownerlocation
+			elt = (Element) mainElt.getElementsByTagName("owner").item(0);
+			ownerlocation = elt.getAttribute("location");
+
+		}
 	}
 
 }
