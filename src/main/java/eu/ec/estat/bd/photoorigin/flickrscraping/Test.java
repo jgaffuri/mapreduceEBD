@@ -48,6 +48,7 @@ https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&m
 
 
 	public static void main(String[] args) {
+		Config.init();
 
 		String url = IOUtil.getURL(URL_BASE, "api_key", Config.API_KEY, "method", "flickr.photos.search", "format", "rest", "content_type", "1", "has_geo", "1",
 				"per_page", "20", "page", "1",
