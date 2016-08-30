@@ -67,7 +67,9 @@ public class PhotoSearch {
 				NodeList photoList = mainElt.getElementsByTagName("photo");
 				for(int i=0; i<photoList.getLength(); i++){
 					Element photoElt = (Element) photoList.item(i);
-					list.add( new PhotoInfo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret")) );
+					PhotoInfo photo = new PhotoInfo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret"));
+					//photo.retrieveInfo();
+					list.add(photo);
 				}
 			}
 		}
