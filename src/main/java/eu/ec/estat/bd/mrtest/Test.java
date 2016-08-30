@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd.test;
+package eu.ec.estat.bd.mrtest;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
