@@ -3,6 +3,9 @@
  */
 package eu.ec.estat.bd.photoorigin.flickrscraping;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -10,8 +13,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import com.google.common.io.Files;
 
 import eu.ec.estat.bd.Config;
 import eu.ec.estat.bd.io.IOUtil;
@@ -72,8 +73,24 @@ public class PhotoSearch {
 		}
 		return list;
 	}
-	
+
 	public void save(String path, String fileName){
-		
+		//populate
+		getList();
+
+		try {
+			new File(path).mkdir();
+			File outFile_ = new File(path+fileName);
+			if(outFile_.exists()) outFile_.delete();
+
+			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
+
+			for(PhotoInfo photo : list){
+				bw.write(photo.toString());
+				bw.newLine();
+			}
+			bw.close();
+
+		} catch (Exception e) { e.printStackTrace(); }
 	}
 }

@@ -3,8 +3,6 @@
  */
 package eu.ec.estat.bd.photoorigin.flickrscraping;
 
-import java.util.Collection;
-
 import eu.ec.estat.bd.Config;
 
 /**
@@ -19,13 +17,9 @@ public class Test {
 
 		String year = "2014", month = "08";
 
-		Collection<PhotoInfo> photos = new PhotoSearch(
-				"lat", ""+43.695949, "lon", ""+7.271413, "radius", ""+5, //nice
-				//"lat", "49.611622", "lon", "6.131935", "radius", "10", //luxembourg
-				"min_taken_date", year+"-"+month+"-01", "max_taken_date", year+"-"+month+"-31"
-				).getList();
-
-		System.out.println(photos.size());
+		//"lat", "49.611622", "lon", "6.131935", "radius", "10", //luxembourg
+		PhotoSearch ps = new PhotoSearch("lat", ""+43.695949, "lon", ""+7.271413, "radius", ""+5, "min_taken_date", year+"-"+month+"-01", "max_taken_date", year+"-"+month+"-31");
+		ps.save("out/flickr/", year+"_"+month+".txt");
 
 		/*
 		Photo photo;
