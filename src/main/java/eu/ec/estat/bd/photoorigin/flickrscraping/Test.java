@@ -19,11 +19,13 @@ public class Test {
 
 		String year = "2014", month = "08";
 
-		Collection<Photo> photos = Photo.getPhotoList(
+		Collection<PhotoInfo> photos = new PhotoSearch(
 				"lat", ""+43.695949, "lon", ""+7.271413, "radius", ""+5, //nice
 				//"lat", "49.611622", "lon", "6.131935", "radius", "10", //luxembourg
 				"min_taken_date", year+"-"+month+"-01", "max_taken_date", year+"-"+month+"-31"
-				);
+				).getList();
+
+		System.out.println(photos.size());
 
 		/*
 		Photo photo;
