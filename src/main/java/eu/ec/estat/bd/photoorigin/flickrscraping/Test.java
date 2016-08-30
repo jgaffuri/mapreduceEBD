@@ -15,10 +15,13 @@ public class Test {
 		System.out.println("Start");
 		Config.init();
 
-		/*Collection<Photo> photos = getPhotosList(
-				43.695949, 7.271413, 5, //nice
+		/*
+		String year = "2014", month = "08";
+
+		Collection<Photo> photos = Photo.getPhotoList(
+				"lat", ""+43.695949, "lon", ""+7.271413, "radius", ""+5, //nice
 				//"lat", "49.611622", "lon", "6.131935", "radius", "10", //luxembourg
-				"2015-07-15", "2015-08-01"
+				"min_taken_date", year+"-"+month+"-01", "max_taken_date", year+"-"+month+"-31"
 				);
 
 		System.out.println(photos.size());
@@ -26,9 +29,26 @@ public class Test {
 			System.out.println(photo);
 		System.out.println(photos.size());*/
 
-		Photo photo = new Photo("19527571594", "36049946@N03", "7022d8922a");
+		/*
+		Photo photo;
+		photo = new Photo("19527571594", "36049946@N03", "7022d8922a");
 		photo.retrieveInfo();
 		System.out.println(photo);
+		photo = new Photo("15679522111", "7898071@N04", "b8bf79ab32");
+		photo.retrieveInfo();
+		System.out.println(photo);
+		photo = new Photo("15582927170", "99056719@N00", "8a65dcc990");
+		photo.retrieveInfo();
+		System.out.println(photo);
+		photo = new Photo("15077256071", "50285818@N02", "fa2363b0f1");
+		photo.retrieveInfo();
+		System.out.println(photo);
+		photo = new Photo("14884305219", "56857020@N04", "8a9dbe0a66");
+		photo.retrieveInfo();
+		System.out.println(photo);
+		photo = new Photo("15481200116", "128591204@N04", "e46f9b6209");
+		photo.retrieveInfo();
+		System.out.println(photo);*/
 
 		System.out.println("End");
 	}

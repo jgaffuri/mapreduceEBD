@@ -6,6 +6,7 @@ package eu.ec.estat.bd.photoorigin.flickrscraping;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -83,18 +84,18 @@ public class Photo {
 	 * 
 	 * @return
 	 */
-	public static Collection<Photo> getPhotosList(double lat, double lon, int radiusKM, String minDate, String maxDate){
+	public static Collection<Photo> getPhotoList(String... paramData){
 		String perpage = "250";
 		int pages = 1;
+
+		//build url template
+		paramData = (String[])ArrayUtils.addAll(paramData, new String[] {"api_key", Config.FLICKR_API_KEY, "method", "flickr.photos.search", "format", "rest", "content_type", "1", "has_geo", "1", "per_page", perpage});
+		String url_ = IOUtil.getURL(URL_BASE, paramData);
 
 		Collection<Photo> photos = new HashSet<Photo>();
 		for(int page=1; page<=pages; page++){
 
-			String url = IOUtil.getURL(URL_BASE, "api_key", Config.FLICKR_API_KEY, "method", "flickr.photos.search", "format", "rest", "content_type", "1", "has_geo", "1",
-					"per_page", perpage, "page", ""+page,
-					"lat", ""+lat, "lon", ""+lon, "radius", ""+radiusKM,
-					"min_taken_date", minDate, "max_taken_date", maxDate
-					);
+			String url = url_ + "&page="+page;
 			System.out.println(url);
 
 			//parse xml
