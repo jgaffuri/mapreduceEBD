@@ -3,11 +3,15 @@
  */
 package eu.ec.estat.bd.photoorigin.flickrscraping;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.w3c.dom.Document;
@@ -90,8 +94,13 @@ public class PhotoSearch {
 	 * Retrieve some information on the photo
 	 */
 	public void retrievePhotoInfo(){
-		for(PhotoInfo photo : getList())
+		int i=1;
+		for(PhotoInfo photo : getList()){
+			System.out.println((i++)+"/"+getList().size());
 			photo.retrieveInfo();
+			System.out.println(photo);
+			try { TimeUnit.SECONDS.sleep(1); } catch(InterruptedException e) { Thread.currentThread().interrupt(); }
+		}
 	}
 
 	/**
@@ -104,19 +113,50 @@ public class PhotoSearch {
 		//populate
 		getList();
 
+		BufferedWriter bw = null;
 		try {
 			new File(path).mkdirs();
 			File outFile_ = new File(path+fileName);
 			if(outFile_.exists()) outFile_.delete();
 
-			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
+			bw = new BufferedWriter(new FileWriter(outFile_, true));
 
 			for(PhotoInfo photo : list){
 				bw.write(photo.toString());
 				bw.newLine();
 			}
 			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try { if (bw != null) bw.close(); } catch (Exception ex) { ex.printStackTrace(); }
+		}
+	}
 
-		} catch (Exception e) { e.printStackTrace(); }
+
+	public void load(String filePath) {
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(filePath));
+
+			list = new HashSet<PhotoInfo>();
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] data = line.split("\\|", -1);
+				//0id+"|"+1owner+"|"+2ownerlocation+"|"+3secret+"|"+4date+"|"+5lat+"|"+6lon
+				PhotoInfo photo = new PhotoInfo(data[0],data[1],data[3]);
+				photo.ownerlocation = data[2];
+				photo.date = data[4];
+				photo.lat = Double.parseDouble(data[5]);
+				photo.lon = Double.parseDouble(data[6]);
+				list.add(photo);
+			}
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try { if (br != null)br.close(); } catch (Exception ex) { ex.printStackTrace(); }
+		}
+
 	}
 }

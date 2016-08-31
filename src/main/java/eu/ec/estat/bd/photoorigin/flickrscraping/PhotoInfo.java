@@ -20,15 +20,15 @@ public class PhotoInfo {
 	private static final String URL_BASE = "https://api.flickr.com/services/rest/";
 
 	//information on the photo
-	String id, secret, date, owner, ownerlocation;
-	double lat, lon;
+	String id="", secret="", date="", owner="", ownerlocation="";
+	double lat=999, lon=999;
 
 	public PhotoInfo(String id, String owner, String secret){
 		this.id=id; this.owner=owner; this.secret=secret;
 	}
 
 	@Override
-	public String toString() { return id+"___"+owner+"___"+ownerlocation+"___"+"___"+secret+"___"+date+"___"+lat+"___"+lon; }
+	public String toString() { return id+"|"+owner+"|"+ownerlocation+"|"+secret+"|"+date+"|"+lat+"|"+lon; }
 
 	/**
 	 * Retrieve missing information on the photo based on its id+secret
