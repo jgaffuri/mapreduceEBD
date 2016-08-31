@@ -26,16 +26,26 @@ public class PhotoSearch {
 	private static final String URL_BASE = "https://api.flickr.com/services/rest/";
 	private static final String perpage = "250";
 
-	private String url_;
+	//the 
+	private String urlQueryBase;
 	private Collection<PhotoInfo> list;
 
+	/**
+	 * A photo search with some query parameters
+	 * See https://www.flickr.com/services/api/flickr.photos.search.html
+	 * 
+	 * @param paramData
+	 */
 	public PhotoSearch(String... paramData){
 		//build url template
 		String[] paramData_ = (String[])ArrayUtils.addAll(paramData, new String[] {"api_key", Config.FLICKR_API_KEY, "method", "flickr.photos.search", "format", "rest", "content_type", "1", "has_geo", "1", "per_page", perpage});
-		url_ = IOUtil.getURL(URL_BASE, paramData_);
+		urlQueryBase = IOUtil.getURL(URL_BASE, paramData_);
 	}
 
 
+	/**
+	 * @return The list of photos for the query
+	 */
 	public Collection<PhotoInfo> getList(){
 		if(list == null) {
 			list = new HashSet<PhotoInfo>();
@@ -43,7 +53,7 @@ public class PhotoSearch {
 			int pages = 1;
 			for(int page=1; page<=pages; page++){
 
-				String url = url_ + "&page="+page;
+				String url = urlQueryBase + "&page="+page;
 				System.out.println(url);
 
 				//parse xml
@@ -76,6 +86,20 @@ public class PhotoSearch {
 		return list;
 	}
 
+	/**
+	 * Retrieve some information on the photo
+	 */
+	public void retrievePhotoInfo(){
+		for(PhotoInfo photo : getList())
+			photo.retrieveInfo();
+	}
+
+	/**
+	 * Save the list.
+	 * 
+	 * @param path
+	 * @param fileName
+	 */
 	public void save(String path, String fileName){
 		//populate
 		getList();
