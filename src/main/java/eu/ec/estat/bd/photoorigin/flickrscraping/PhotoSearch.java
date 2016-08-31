@@ -9,8 +9,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -32,7 +35,7 @@ public class PhotoSearch {
 
 	//the 
 	private String urlQueryBase;
-	private Collection<PhotoInfo> list;
+	private List<PhotoInfo> list;
 
 	/**
 	 * A photo search with some query parameters
@@ -50,9 +53,9 @@ public class PhotoSearch {
 	/**
 	 * @return The list of photos for the query
 	 */
-	public Collection<PhotoInfo> getList(){
+	public List<PhotoInfo> getList(){
 		if(list == null) {
-			list = new HashSet<PhotoInfo>();
+			list = new ArrayList<PhotoInfo>();
 
 			int pages = 1;
 			for(int page=1; page<=pages; page++){
@@ -91,16 +94,33 @@ public class PhotoSearch {
 	}
 
 	/**
-	 * Retrieve some information on the photo
+	 * Retrieve some information on the photo (with one query per second)
 	 */
+	private int i__=0;
 	public void retrievePhotoInfo(){
-		int i=1;
+		i__=0;
+		final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+		executor.scheduleAtFixedRate(new Runnable() {
+			public void run() {
+				System.out.println(i__+"/"+getList().size());
+				if(i__==getList().size()){
+					executor.shutdown();
+					return;
+				}
+				PhotoInfo photo = getList().get(i__);
+				photo.retrieveInfo();
+				System.out.println(photo);
+				i__++;
+			}
+		}, 0, 1, TimeUnit.SECONDS);
+
+		/*int i=1;
 		for(PhotoInfo photo : getList()){
 			System.out.println((i++)+"/"+getList().size());
 			photo.retrieveInfo();
 			System.out.println(photo);
 			try { TimeUnit.SECONDS.sleep(1); } catch(InterruptedException e) { Thread.currentThread().interrupt(); }
-		}
+		}*/
 	}
 
 	/**
@@ -139,7 +159,7 @@ public class PhotoSearch {
 		try {
 			br = new BufferedReader(new FileReader(filePath));
 
-			list = new HashSet<PhotoInfo>();
+			list = new ArrayList<PhotoInfo>();
 			String line;
 			while ((line = br.readLine()) != null) {
 				String[] data = line.split("\\|", -1);
