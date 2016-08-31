@@ -26,11 +26,14 @@ public class Main {
 		photo.retrieveInfo();
 		System.out.println(photo);*/
 
+		System.out.println("Load photo list");
 		PhotoSearch ps = new PhotoSearch();
 		ps.load("out/flickr/nice.txt");
 		System.out.println(ps.getList().size());
 
 		ps.retrievePhotoInfo();
+
+		System.out.println("Save photo information");
 		ps.save("out/flickr/", "nice_.txt");
 
 		System.out.println("End");
