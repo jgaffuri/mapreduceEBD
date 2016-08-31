@@ -37,7 +37,7 @@ public class Main {
 		//ps.save("out/flickr/", "nice_.txt");
 
 		PhotoSearch ps = new PhotoSearch("lat", ""+43.695949, "lon", ""+7.271413, "radius", ""+5, "min_taken_date", "2010-01");
-		ps.getAndSave("out/flickr/", "nice_.txt");
+		ps.getAndSave("out/flickr/", "nice.txt");
 
 		System.out.println("End");
 	}
