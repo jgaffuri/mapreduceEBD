@@ -9,7 +9,7 @@ import eu.ec.estat.bd.Config;
  * @author Julien Gaffuri
  *
  */
-public class Test {
+public class Main {
 
 	public static void main(String[] args) {
 		System.out.println("Start");

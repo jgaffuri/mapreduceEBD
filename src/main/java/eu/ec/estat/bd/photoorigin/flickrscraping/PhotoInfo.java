@@ -28,7 +28,7 @@ public class PhotoInfo {
 	}
 
 	@Override
-	public String toString() { return id+" "+owner+" "+ownerlocation+" "+" "+secret+" "+date+" "+lat+" "+lon; }
+	public String toString() { return id+"___"+owner+"___"+ownerlocation+"___"+"___"+secret+"___"+date+"___"+lat+"___"+lon; }
 
 	/**
 	 * Retrieve missing information on the photo based on its id+secret
@@ -38,7 +38,7 @@ public class PhotoInfo {
 		//https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.photos.getInfo&format=rest&photo_id=19527571594&secret=7022d8922a
 
 		String url = IOUtil.getURL(URL_BASE, "api_key", Config.FLICKR_API_KEY, "method", "flickr.photos.getInfo", "format", "rest", "photo_id", id, "secret", secret);
-		//System.out.println(url);
+		System.out.println(url);
 
 		//parse xml
 		Document xml = XML.parseXMLfromURL(url);
