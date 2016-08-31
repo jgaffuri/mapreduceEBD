@@ -38,7 +38,7 @@ public class PhotoInfo {
 		//https://api.flickr.com/services/rest/?api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.photos.getInfo&format=rest&photo_id=19527571594&secret=7022d8922a
 
 		String url = IOUtil.getURL(URL_BASE, "api_key", Config.FLICKR_API_KEY, "method", "flickr.photos.getInfo", "format", "rest", "photo_id", id, "secret", secret);
-		System.out.println(url);
+		//System.out.println(url);
 
 		//parse xml
 		Document xml = XML.parseXMLfromURL(url);
@@ -69,5 +69,17 @@ public class PhotoInfo {
 		ownerlocation = elt.getAttribute("location");
 
 	}
+
+	/*
+	public void appendToFile(String path, String fileName){
+		try {
+			new File(path).mkdirs();
+			File outFile_ = new File(path+fileName);
+			if(!outFile_.exists()) Files.createFile(Paths.get(path+fileName));
+
+			Files.write(Paths.get(path+fileName), (toString()+"\n").getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e) { e.printStackTrace(); }
+
+	}*/
 
 }

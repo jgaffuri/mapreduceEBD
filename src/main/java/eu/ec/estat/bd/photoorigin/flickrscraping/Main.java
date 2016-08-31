@@ -26,15 +26,18 @@ public class Main {
 		photo.retrieveInfo();
 		System.out.println(photo);*/
 
+		/*
 		System.out.println("Load photo list");
 		PhotoSearch ps = new PhotoSearch();
 		ps.load("out/flickr/nice.txt");
 		System.out.println(ps.getList().size());
 
-		ps.retrievePhotoInfo();
+		ps.retrievePhotoInfo("out/flickr/", "nice_.txt");*/
 
-		System.out.println("Save photo information");
-		ps.save("out/flickr/", "nice_.txt");
+		//ps.save("out/flickr/", "nice_.txt");
+
+		PhotoSearch ps = new PhotoSearch("lat", ""+43.695949, "lon", ""+7.271413, "radius", ""+5, "min_taken_date", "2010-01");
+		ps.getAndSave("out/flickr/", "nice_.txt");
 
 		System.out.println("End");
 	}
