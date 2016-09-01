@@ -33,6 +33,20 @@ public class PhotoSearch {
 	private String urlQueryBase;
 	//private List<PhotoInfo> list;
 
+	//https://www.flickr.com/services/api/explore/flickr.photos.search
+	//https://api.flickr.com/services/rest/?lat=43.695949&lon=7.271413&radius=5&min_taken_date=2010-01&api_key=ff1340afcb6f0bc7ba23f38eed2a1e17&method=flickr.photos.search&format=rest&content_type=1&has_geo=1&per_page=250&page=229
+	//Please note that Flickr will return at most the first 4,000 results for any given search query. If this is an issue, we recommend trying a more specific query.
+	//safe_search?
+	//content_type=7?
+
+	//woe_id
+	//place_id
+	//has_geo
+
+	//find location coords from text: https://www.flickr.com/services/api/flickr.places.find.html
+	//find user location with https://www.flickr.com/services/api/flickr.places.placesForUser.html
+
+
 	/**
 	 * A photo search with some query parameters
 	 * See https://www.flickr.com/services/api/flickr.photos.search.html
@@ -49,7 +63,7 @@ public class PhotoSearch {
 	/**
 	 * @return Retrieve and save image data
 	 */
-	private int page=0, pages=999, photoNb=0, photoI=0;
+	private int page=0, pages=99999999, photoNb=0, photoI=0;
 	NodeList photoList = null;
 	StringBuffer sb = new StringBuffer();
 	public void getAndSave(final String path, final String fileName){
@@ -60,7 +74,7 @@ public class PhotoSearch {
 		try {
 			if(outFile_.exists()) outFile_.delete();
 			Files.createFile(Paths.get(path+fileName));
-		} catch (IOException e) { e.printStackTrace(); }
+		} catch (Exception e) { e.printStackTrace(); }
 
 		//launch queries with scheduler - one query every second
 		final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -104,8 +118,8 @@ public class PhotoSearch {
 
 					mainElt = (Element) mainElt.getElementsByTagName("photos").item(0);
 
-					//update pages count (if different from 1)
-					if(pages == 999) pages = Integer.parseInt(mainElt.getAttribute("pages"));
+					//initialise pages count (if not already done)
+					if(pages == 99999999) pages = Integer.parseInt(mainElt.getAttribute("pages"));
 
 					System.out.println(page+"/"+pages);
 
