@@ -59,6 +59,7 @@ public class PhotoSearch {
 		urlQueryBase = IOUtil.getURL(URL_BASE, paramData_);
 	}
 
+	//TODO use generic scheduler
 
 	/**
 	 * @return Retrieve and save image data
