@@ -42,6 +42,7 @@ public class ScrapingScheduler {
 		String sign = qu.getSignature();
 		synchronized (queries) {
 			if(querySignatures.contains(sign)) return false;
+			querySignatures.add(sign);
 			return queries.add(qu);
 		}
 	}
@@ -52,12 +53,15 @@ public class ScrapingScheduler {
 	 * @author Julien Gaffuri
 	 *
 	 */
-	private class Query {
+	private static class Query implements Comparable<Query> {
 		QueryType type;
 		String url;
 		Function callback;
+		private long timeStamp = System.currentTimeMillis();
+
 		public Query(QueryType type, String url, Function callback){ this.type=type; this.url=url; this.callback=callback; }
 		String getSignature(){ return url; }
+		public int compareTo(Query qu) { return (int)(timeStamp-qu.timeStamp); }
 	}
 	public enum QueryType { STRING, XML }
 	public interface Function { void execute(Object data); }
@@ -74,9 +78,11 @@ public class ScrapingScheduler {
 		final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 		executor.scheduleAtFixedRate(new Runnable() {
 			public void run() {
-
 				Query qu = null;
-				synchronized (queries) { qu = queries.poll(); }
+				synchronized (queries) {
+					qu = queries.poll();
+					if(verbose) System.out.println("Queue size: "+queries.size());
+				}
 
 				if(qu==null){
 					//no more query to execute: exit
@@ -96,7 +102,6 @@ public class ScrapingScheduler {
 				qu.callback.execute(data);
 			}
 		}, 0, timeMilliSeconds, TimeUnit.MILLISECONDS);
-
 	}
 
 }

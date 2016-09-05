@@ -20,6 +20,9 @@ import org.w3c.dom.NodeList;
 import eu.ec.estat.bd.Config;
 import eu.ec.estat.bd.io.IOUtil;
 import eu.ec.estat.bd.io.XML;
+import eu.ec.estat.bd.scraping.ScrapingScheduler;
+import eu.ec.estat.bd.scraping.ScrapingScheduler.Function;
+import eu.ec.estat.bd.scraping.ScrapingScheduler.QueryType;
 
 /**
  * @author Julien Gaffuri
@@ -31,6 +34,7 @@ public class PhotoSearch {
 
 	//the URL pattern
 	private String urlQueryBase;
+	private String urlQueryBaseNoKey;
 	//private List<PhotoInfo> list;
 
 	//https://www.flickr.com/services/api/explore/flickr.photos.search
@@ -55,11 +59,10 @@ public class PhotoSearch {
 	 */
 	public PhotoSearch(String... paramData){
 		//build url template
-		String[] paramData_ = (String[])ArrayUtils.addAll(paramData, new String[] {"api_key", Config.FLICKR_API_KEY, "method", "flickr.photos.search", "format", "rest", "content_type", "1", "has_geo", "1", "per_page", perpage});
-		urlQueryBase = IOUtil.getURL(URL_BASE, paramData_);
+		String[] paramData_ = (String[])ArrayUtils.addAll(paramData, new String[] {"method", "flickr.photos.search", "format", "rest", "content_type", "1", "has_geo", "1", "per_page", perpage});
+		urlQueryBaseNoKey = IOUtil.getURL(URL_BASE, paramData_);
+		urlQueryBase = urlQueryBaseNoKey + "&api_key=" + Config.FLICKR_API_KEY;
 	}
-
-	//TODO use generic scheduler
 
 	/**
 	 * @return Retrieve and save image data
@@ -146,7 +149,6 @@ public class PhotoSearch {
 			}
 		}, 0, 1, TimeUnit.SECONDS);
 
-
 		/*
 		int pages = 1;
 		for(int page=1; page<=pages; page++){
@@ -210,6 +212,95 @@ public class PhotoSearch {
 		}*/
 	}
 
+	public void getAndSaveWithGenericScheduler(final String path, final String fileName){
+		final ScrapingScheduler sch = new ScrapingScheduler();
+
+		sch.add(QueryType.XML, urlQueryBaseNoKey, new Function(){
+			public void execute(Object data) {
+				Document xml = (Document) data;
+
+				//check status
+				Element mainElt = (Element)xml.getChildNodes().item(0);
+				String status = mainElt.getAttribute("stat");
+				if(!status.equals("ok")){
+					System.out.println("Could not get data from url: "+urlQueryBaseNoKey);
+					System.out.println("Status = "+status);
+					return;
+				}
+
+				mainElt = (Element) mainElt.getElementsByTagName("photos").item(0);
+				final int pages = Integer.parseInt(mainElt.getAttribute("pages"));
+				System.out.println("pages="+pages);
+
+				for(int page=1; page<=pages; page++){
+					final int pagef=page;
+					String url = urlQueryBaseNoKey+"&page="+page;
+					sch.add(QueryType.XML, url, new Function(){
+						public void execute(Object data) {
+							Document xml_ = (Document) data;
+
+							//check status
+							Element mainElt = (Element)xml_.getChildNodes().item(0);
+							String status = mainElt.getAttribute("stat");
+							if(!status.equals("ok")){
+								System.out.println("Could not get data from url: "+urlQueryBaseNoKey);
+								System.out.println("Status = "+status);
+								return;
+							}
+
+							//get photo elements
+							NodeList photoList = mainElt.getElementsByTagName("photo");
+							System.out.println(pagef + "/" + pages + "    photonb="+photoList.getLength());
+
+							for(int photoI=0; photoI<photoList.getLength(); photoI++) {
+								//load next image
+								Element photoElt = (Element) photoList.item(photoI);
+								final PhotoInfo photo = new PhotoInfo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret"));
+
+								final String url = IOUtil.getURL(URL_BASE, "method", "flickr.photos.getInfo", "format", "rest", "photo_id", photo.id, "secret", photo.secret);
+								sch.add(QueryType.XML, url, new Function(){
+									public void execute(Object data) {
+										Document xml_ = (Document) data;
+
+										//check status
+										Element mainElt = (Element)xml_.getChildNodes().item(0);
+										String status = mainElt.getAttribute("stat");
+										if(!status.equals("ok")){
+											System.out.println("Could not get data from url: "+url);
+											System.out.println("Status = "+status);
+											return;
+										}
+
+										mainElt = (Element) mainElt.getElementsByTagName("photo").item(0);
+										Element elt;
+
+										//get location information
+										elt = (Element) mainElt.getElementsByTagName("location").item(0);
+										photo.lat = Double.parseDouble(elt.getAttribute("latitude"));
+										photo.lon = Double.parseDouble(elt.getAttribute("longitude"));
+
+										//get date information
+										elt = (Element) mainElt.getElementsByTagName("dates").item(0);
+										photo.date = elt.getAttribute("taken");
+
+										//get ownerlocation information
+										elt = (Element) mainElt.getElementsByTagName("owner").item(0);
+										photo.ownerlocation = elt.getAttribute("location");
+
+										String photoSt = photo.toString();
+										System.out.println(photoSt);
+									}
+								});
+							}
+							//TODO save from time to time
+						}
+					});
+				}
+			}
+		});
+
+		sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEY, true);
+	}
 
 
 	/**
