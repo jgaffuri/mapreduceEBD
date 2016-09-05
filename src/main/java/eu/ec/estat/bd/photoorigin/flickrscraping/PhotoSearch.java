@@ -92,7 +92,7 @@ public class PhotoSearch {
 
 							//get photo elements
 							NodeList photoList = mainElt.getElementsByTagName("photo");
-							System.out.println(pagef + "/" + pages + "    photonb="+photoList.getLength());
+							System.out.println("page: " + pagef + "/" + pages);
 
 							for(int photoI=0; photoI<photoList.getLength(); photoI++) {
 								//load next image
@@ -150,5 +150,9 @@ public class PhotoSearch {
 
 		sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[0], true);
 	}
+
+	
+	//TODO get user information
+	//find user location with https://www.flickr.com/services/api/flickr.places.placesForUser.html
 
 }
