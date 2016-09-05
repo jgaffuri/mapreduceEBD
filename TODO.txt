@@ -1,3 +1,2 @@
 write mvn deploy
-find test case. with wikipedia data? other?
 

@@ -125,7 +125,7 @@ public class ScrapingScheduler {
 
 				if(qu==null){
 					//no more query to execute: exit
-					if(regularAction!=null && regularActionFreq>0 && count>=regularActionFreq) regularAction.execute(null);
+					if(regularAction!=null && regularActionFreq>0) regularAction.execute(null);
 					System.out.println("Done");
 					executor.shutdown();
 					return;

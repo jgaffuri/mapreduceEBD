@@ -40,7 +40,6 @@ public class PhotoSearch {
 	//find location coords from text: https://www.flickr.com/services/api/flickr.places.find.html
 	//find user location with https://www.flickr.com/services/api/flickr.places.placesForUser.html
 
-
 	/**
 	 * A photo search with some query parameters
 	 * See https://www.flickr.com/services/api/flickr.photos.search.html
@@ -57,7 +56,7 @@ public class PhotoSearch {
 
 	public void getAndSaveWithGenericScheduler(final String path, final String fileName){
 
-		final ScrapingScheduler sch = new ScrapingScheduler(20, path, fileName);
+		final ScrapingScheduler sch = new ScrapingScheduler(250, path, fileName);
 
 		sch.add(QueryType.XML, urlQueryBaseNoKey, new Function(){
 			public void execute(Object data) {
@@ -98,9 +97,12 @@ public class PhotoSearch {
 							for(int photoI=0; photoI<photoList.getLength(); photoI++) {
 								//load next image
 								Element photoElt = (Element) photoList.item(photoI);
-								final PhotoInfo photo = new PhotoInfo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret"));
 
-								final String url = IOUtil.getURL(URL_BASE, "method", "flickr.photos.getInfo", "format", "rest", "photo_id", photo.id, "secret", photo.secret);
+								final String id = photoElt.getAttribute("id");
+								final String owner = photoElt.getAttribute("owner");
+								final String secret = photoElt.getAttribute("secret");
+
+								final String url = IOUtil.getURL(URL_BASE, "method", "flickr.photos.getInfo", "format", "rest", "photo_id", id, "secret", secret);
 								sch.add(QueryType.XML, url, new Function(){
 									public void execute(Object data) {
 										Document xml_ = (Document) data;
@@ -119,18 +121,18 @@ public class PhotoSearch {
 
 										//get location information
 										elt = (Element) mainElt.getElementsByTagName("location").item(0);
-										photo.lat = Double.parseDouble(elt.getAttribute("latitude"));
-										photo.lon = Double.parseDouble(elt.getAttribute("longitude"));
+										double lat = Double.parseDouble(elt.getAttribute("latitude"));
+										double lon = Double.parseDouble(elt.getAttribute("longitude"));
 
 										//get date information
 										elt = (Element) mainElt.getElementsByTagName("dates").item(0);
-										photo.date = elt.getAttribute("taken");
+										String date = elt.getAttribute("taken");
 
 										//get ownerlocation information
 										elt = (Element) mainElt.getElementsByTagName("owner").item(0);
-										photo.ownerlocation = elt.getAttribute("location");
+										String ownerlocation = elt.getAttribute("location");
 
-										String photoSt = photo.toString();
+										String photoSt = id+"|"+owner+"|"+ownerlocation+"|"+secret+"|"+date+"|"+lat+"|"+lon;
 										System.out.println(photoSt);
 
 										sch.append(photoSt).append("\n");
@@ -140,292 +142,13 @@ public class PhotoSearch {
 						}
 					});
 				}
+
+				for(int i=1; i<Config.FLICKR_API_KEYS.length; i++)
+					sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[i], true);
 			}
 		});
 
-		sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEY, true);
+		sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[0], true);
 	}
 
-
-
-	/**
-	 * @return Retrieve and save image data
-	 */
-	/*private int page=0, pages=99999999, photoNb=0, photoI=0;
-	NodeList photoList = null;
-	StringBuffer sb = new StringBuffer();
-	public void getAndSave(final String path, final String fileName){
-
-		//initialise output file
-		new File(path).mkdirs();
-		File outFile_ = new File(path+fileName);
-		try {
-			if(outFile_.exists()) outFile_.delete();
-			Files.createFile(Paths.get(path+fileName));
-		} catch (Exception e) { e.printStackTrace(); }
-
-		//launch queries with scheduler - one query every second
-		final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-		executor.scheduleAtFixedRate(new Runnable() {
-			public void run() {
-
-				//new page needed to be loaded
-				if(photoI==photoNb){
-
-					//save
-					System.out.println("save...");
-					try {
-						Files.write(Paths.get(path+fileName), sb.toString().getBytes(), StandardOpenOption.APPEND);
-					} catch (IOException e) { e.printStackTrace(); }
-					sb = new StringBuffer();
-
-					page++;
-
-					if(page>pages){
-						//no more page to load: exit
-						System.out.println("Done");
-						executor.shutdown();
-						return;
-					}
-
-					//load new page
-					String url = urlQueryBase + "&page="+page;
-					System.out.println(url);
-
-					//parse xml
-					Document xml = XML.parseXMLfromURL(url);
-
-					//check status
-					Element mainElt = (Element)xml.getChildNodes().item(0);
-					String status = mainElt.getAttribute("stat");
-					if(!status.equals("ok")){
-						System.out.println("Could not get data from url: "+url);
-						System.out.println("Status = "+status);
-						return;
-					}
-
-					mainElt = (Element) mainElt.getElementsByTagName("photos").item(0);
-
-					//initialise pages count (if not already done)
-					if(pages == 99999999) pages = Integer.parseInt(mainElt.getAttribute("pages"));
-
-					System.out.println(page+"/"+pages);
-
-					//get photo elements
-					photoList = mainElt.getElementsByTagName("photo");
-
-					photoI=0; photoNb=photoList.getLength();
-					return;
-				}
-
-				//load next image
-				Element photoElt = (Element) photoList.item(photoI);
-				PhotoInfo photo = new PhotoInfo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret"));
-
-				photo.retrieveInfo();
-				String photoSt = photo.toString();
-				System.out.println(photoSt);
-
-				sb.append(photoSt);
-				sb.append("\n");
-
-				photoI++;
-			}
-		}, 0, 1, TimeUnit.SECONDS);
-
-		/*
-		int pages = 1;
-		for(int page=1; page<=pages; page++){
-
-			String url = urlQueryBase + "&page="+page;
-			System.out.println(url);
-
-			//parse xml
-			Document xml = XML.parseXMLfromURL(url);
-
-			//check status
-			Element mainElt = (Element)xml.getChildNodes().item(0);
-			String status = mainElt.getAttribute("stat");
-			if(!status.equals("ok")){
-				System.out.println("Could not get data from url: "+url);
-				System.out.println("Status = "+status);
-				continue;
-			}
-
-			mainElt = (Element) mainElt.getElementsByTagName("photos").item(0);
-
-			//update pages count (if different from 1)
-			if(pages == 1) pages = Integer.parseInt(mainElt.getAttribute("pages"));
-
-			System.out.println(page+"/"+pages);
-
-			//focus on photo elements
-			final NodeList photoList = mainElt.getElementsByTagName("photo");
-			i__=0;
-			final StringBuffer data_ = new StringBuffer();
-
-			final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-			executor.scheduleAtFixedRate(new Runnable() {
-				public void run() {
-
-					if(i__==photoList.getLength()){
-						//save
-						System.out.println("save...");
-						try {
-							Files.write(Paths.get(path+fileName), data_.toString().getBytes(), StandardOpenOption.APPEND);
-						} catch (IOException e) { e.printStackTrace(); }
-
-						executor.shutdown();
-						return;
-					}
-
-					Element photoElt = (Element) photoList.item(i__);
-					PhotoInfo photo = new PhotoInfo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret"));
-
-					photo.retrieveInfo();
-					System.out.println(photo);
-
-					data_.append(photo.toString());
-					data_.append("\n");
-					//photo.appendToFile(path, outFile);
-					i__++;
-				}
-			}, 0, 1, TimeUnit.SECONDS);
-
-
-		}*/
-	//}
-
-
-
-
-
-	/**
-	 * @return The list of photos for the query
-	 */
-	/*public List<PhotoInfo> getList(){
-		if(list == null) {
-			list = new ArrayList<PhotoInfo>();
-
-			int pages = 1;
-			for(int page=1; page<=pages; page++){
-
-				String url = urlQueryBase + "&page="+page;
-				System.out.println(url);
-
-				//parse xml
-				Document xml = XML.parseXMLfromURL(url);
-
-				//check status
-				Element mainElt = (Element)xml.getChildNodes().item(0);
-				String status = mainElt.getAttribute("stat");
-				if(!status.equals("ok")){
-					System.out.println("Could not get data from url: "+url);
-					System.out.println("Status = "+status);
-					continue;
-				}
-
-				mainElt = (Element) mainElt.getElementsByTagName("photos").item(0);
-
-				//update pages count (if different from 1)
-				if(pages == 1) pages = Integer.parseInt(mainElt.getAttribute("pages"));
-
-				//create photo elements
-				NodeList photoList = mainElt.getElementsByTagName("photo");
-				for(int i=0; i<photoList.getLength(); i++){
-					Element photoElt = (Element) photoList.item(i);
-					PhotoInfo photo = new PhotoInfo(photoElt.getAttribute("id"), photoElt.getAttribute("owner"), photoElt.getAttribute("secret"));
-					//photo.retrieveInfo();
-					list.add(photo);
-				}
-			}
-		}
-		return list;
-	}*/
-
-
-
-
-	/**
-	 * Retrieve some information on the photo (with one query per second)
-	 */
-	/*
-	public void retrievePhotoInfo(){ retrievePhotoInfo(null,null);}
-	public void retrievePhotoInfo(final String path, final String outFile){
-		i__=0;
-		final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-		executor.scheduleAtFixedRate(new Runnable() {
-			public void run() {
-				System.out.println(i__+"/"+getList().size());
-				if(i__==getList().size()){
-					executor.shutdown();
-					return;
-				}
-				PhotoInfo photo = getList().get(i__);
-				photo.retrieveInfo();
-				if(path != null && outFile != null) photo.appendToFile(path, outFile);
-				System.out.println(photo);
-				i__++;
-			}
-		}, 0, 1, TimeUnit.SECONDS);
-	}
-	 */
-
-
-	/**
-	 * Save the list.
-	 * 
-	 * @param path
-	 * @param fileName
-	 */
-	/*public void save(String path, String fileName){
-		//populate
-		getList();
-
-		BufferedWriter bw = null;
-		try {
-			new File(path).mkdirs();
-			File outFile_ = new File(path+fileName);
-			if(outFile_.exists()) outFile_.delete();
-
-			bw = new BufferedWriter(new FileWriter(outFile_, true));
-
-			for(PhotoInfo photo : list){
-				bw.write(photo.toString());
-				bw.newLine();
-			}
-			bw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try { if (bw != null) bw.close(); } catch (Exception ex) { ex.printStackTrace(); }
-		}
-	}*/
-
-
-	/*public void load(String filePath) {
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(filePath));
-
-			list = new ArrayList<PhotoInfo>();
-			String line;
-			while ((line = br.readLine()) != null) {
-				String[] data = line.split("\\|", -1);
-				//0id+"|"+1owner+"|"+2ownerlocation+"|"+3secret+"|"+4date+"|"+5lat+"|"+6lon
-				PhotoInfo photo = new PhotoInfo(data[0],data[1],data[3]);
-				photo.ownerlocation = data[2];
-				photo.date = data[4];
-				photo.lat = Double.parseDouble(data[5]);
-				photo.lon = Double.parseDouble(data[6]);
-				list.add(photo);
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try { if (br != null)br.close(); } catch (Exception ex) { ex.printStackTrace(); }
-		}
-
-	}*/
 }

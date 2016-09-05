@@ -36,17 +36,11 @@ public class Main {
 
 		//ps.save("out/flickr/", "nice_.txt");
 
-		PhotoSearch ps = new PhotoSearch("lat", ""+43.695949, "lon", ""+7.271413, "radius", ""+5, "min_taken_date", "2016-01");
+		int radius = 8;
+		String min_taken_date = "2000-01";
+		PhotoSearch ps = new PhotoSearch("lat", "43.695949", "lon", "7.271413", "radius", ""+radius, "min_taken_date", min_taken_date);
 		//ps.getAndSave("out/flickr/", "nice.txt");
-		ps.getAndSaveWithGenericScheduler("out/flickr/", "nice.txt");
-
-
-		/*PriorityQueue <Query>  prq = new PriorityQueue<Query> ();
-		for ( int i=5; i<10; i++ ) prq.add( new Query(QueryType.XML, "url"+i, null) );
-		System.out.println ("Init: "+ prq);
-		Query head = prq.poll();
-		System.out.println ( "Head: "+ head);
-		System.out.println ( "After: "+ prq);*/
+		ps.getAndSaveWithGenericScheduler("out/flickr/", "nice_"+radius+"km_"+min_taken_date+".txt");
 
 		System.out.println("End");
 	}
