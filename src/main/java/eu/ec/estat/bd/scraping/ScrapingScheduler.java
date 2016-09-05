@@ -3,6 +3,11 @@
  */
 package eu.ec.estat.bd.scraping;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.concurrent.Executors;
@@ -66,6 +71,40 @@ public class ScrapingScheduler {
 	public enum QueryType { STRING, XML }
 	public interface Function { void execute(Object data); }
 
+	private int count = 0, regularActionFreq;
+	private Function regularAction;
+	private StringBuffer sb = new StringBuffer();
+	public StringBuffer append(String st) { synchronized (sb) { return sb.append(st); }}
+
+	public ScrapingScheduler(){ this(-1,null); }
+	public ScrapingScheduler(int regularActionFreq, Function regularAction){
+		this.regularActionFreq=regularActionFreq; this.regularAction=regularAction;
+	}
+	public ScrapingScheduler(int regularSaveFreq, final String path, final String fileName){
+		this(regularSaveFreq, null);
+
+		//initialise output file
+		new File(path).mkdirs();
+		File outFile_ = new File(path+fileName);
+		try {
+			if(outFile_.exists()) outFile_.delete();
+			Files.createFile(Paths.get(path+fileName));
+		} catch (Exception e) { e.printStackTrace(); }
+
+		this.regularAction = new Function() {
+			public void execute(Object data) {
+				System.out.println("save...");
+				try {
+					synchronized (sb) { 
+						Files.write(Paths.get(path+fileName), sb.toString().getBytes(), StandardOpenOption.APPEND);
+						sb = new StringBuffer();
+					}
+				} catch (IOException e) { e.printStackTrace(); }
+			}
+		};
+
+	}
+
 	/**
 	 * Launch an executor "AtFixedRate".
 	 * NB: several executors may be launched in parrallel in case several keys are available.
@@ -86,6 +125,7 @@ public class ScrapingScheduler {
 
 				if(qu==null){
 					//no more query to execute: exit
+					if(regularAction!=null && regularActionFreq>0 && count>=regularActionFreq) regularAction.execute(null);
 					System.out.println("Done");
 					executor.shutdown();
 					return;
@@ -100,6 +140,12 @@ public class ScrapingScheduler {
 				else data = IOUtil.getDataFromURL(url);
 
 				qu.callback.execute(data);
+
+				count++;
+				if(regularAction!=null && regularActionFreq>0 && count>=regularActionFreq){
+					regularAction.execute(null);
+					count=0;
+				}
 			}
 		}, 0, timeMilliSeconds, TimeUnit.MILLISECONDS);
 	}
