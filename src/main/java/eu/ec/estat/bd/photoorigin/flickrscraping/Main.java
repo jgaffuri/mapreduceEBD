@@ -23,7 +23,7 @@ public class Main {
 		ps.getAndSaveWithGenericScheduler("out/flickr/", "nice_"+radius+"km_"+"2000-1"+".txt", true);
 		 */
 
-		PhotoSearch.getUserInfo("out/flickr/nice___.txt", "out/flickr/", "users.txt");
+		PhotoSearch.getLocationInfo("out/flickr/nice___.txt", "out/flickr/", "locations.txt");
 
 		System.out.println("End");
 	}

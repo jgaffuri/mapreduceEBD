@@ -154,6 +154,8 @@ public class PhotoSearch {
 												sb.append("|").append(elt.getAttribute("latitude"));
 												sb.append("|").append(elt.getAttribute("longitude"));
 												sb.append("|").append(elt.getAttribute("accuracy"));
+												sb.append("|").append(elt.getAttribute("place_id"));
+												sb.append("|").append(elt.getAttribute("woeid"));
 
 												sb.append("\n");
 
@@ -180,8 +182,11 @@ public class PhotoSearch {
 	//private static String getMonth(int month){ return (month>=10?"":"0")+month; }
 	private static String getDateStamp(int year, int month){ return year+"-"+((month>=10?"":"0")+month); }
 
+
+
+
 	//find user location with https://www.flickr.com/services/api/flickr.places.placesForUser.html
-	public static void getUserInfo(String photoInfoFile, String path, String fileName){
+	/*public static void getLocationInfo(String photoInfoFile, String path, String fileName){
 
 		//initialise output file
 		new File(path).mkdirs();
@@ -189,39 +194,41 @@ public class PhotoSearch {
 			if(!new File(path+fileName).exists()) Files.createFile(Paths.get(path+fileName));
 		} catch (Exception e) { e.printStackTrace(); }
 
-		//load collection of users already in the file
-		HashSet<String> usersIdsDone = new HashSet<String>();
+		//load collection of locations already in the file
+		HashSet<String> locationTextDone = new HashSet<String>();
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(path+fileName));
 			String line;
-			while ((line = br.readLine()) != null) usersIdsDone.add(line.split("\\|")[0]);
+			while ((line = br.readLine()) != null) locationTextDone.add(line.split("\\|")[0]);
 			br.close();
 		} catch (IOException e) { e.printStackTrace(); } finally { try { if (br != null)br.close(); } catch (Exception ex) { ex.printStackTrace(); } }
 
-		System.out.println(usersIdsDone.size() + " users located.");
+		System.out.println(locationTextDone.size() + " locations.");
 
-		//get list of users to find
-		HashSet<String> usersIds = new HashSet<String>();
+		//get list of location to handle
+		HashSet<String> locationTexts = new HashSet<String>();
 		try {
 			br = new BufferedReader(new FileReader(photoInfoFile));
 			String line;
 			while ((line = br.readLine()) != null) {
-				String userId = line.split("\\|")[1];
-				if(usersIdsDone.contains(userId)) continue;
-				usersIds.add(userId);
+				String locationText = line.split("\\|")[2];
+				if("".equals(locationText)) continue;
+				if(locationTextDone.contains(locationText)) continue;
+				locationTexts.add(locationText);
 			}
 			br.close();
 		} catch (IOException e) { e.printStackTrace(); } finally { try { if (br != null)br.close(); } catch (Exception ex) { ex.printStackTrace(); } }
 
-		System.out.println(usersIds.size() + " users to locate.");
-
+		System.out.println(locationTexts.size() + " locations to handle.");
+*/
 		/*
+		//https://www.flickr.com/services/api/flickr.places.placesForUser.html
 		final ScrapingScheduler sch = new ScrapingScheduler(250, path, fileName, false);
 		for(String userId : usersIds) {
 			String url = 
 			sch.add(QueryType.XML, url, new Function(){
-				
+
 			}
 		}*/
 
