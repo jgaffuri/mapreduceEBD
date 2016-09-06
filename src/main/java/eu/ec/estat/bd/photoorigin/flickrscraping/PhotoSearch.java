@@ -3,6 +3,14 @@
  */
 package eu.ec.estat.bd.photoorigin.flickrscraping;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashSet;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -127,23 +135,32 @@ public class PhotoSearch {
 												mainElt = (Element) mainElt.getElementsByTagName("photo").item(0);
 												Element elt;
 
+												StringBuffer sb = new StringBuffer();
+												sb.append(id);
+												sb.append("|").append(owner);
+
+												//ownerlocation information
+												elt = (Element) mainElt.getElementsByTagName("owner").item(0);
+												sb.append("|").append(elt.getAttribute("location"));
+
+												sb.append("|").append(secret);
+
+												//date
+												elt = (Element) mainElt.getElementsByTagName("dates").item(0);
+												sb.append("|").append(elt.getAttribute("taken"));
+
 												//get location information
 												elt = (Element) mainElt.getElementsByTagName("location").item(0);
-												double lat = Double.parseDouble(elt.getAttribute("latitude"));
-												double lon = Double.parseDouble(elt.getAttribute("longitude"));
+												sb.append("|").append(elt.getAttribute("latitude"));
+												sb.append("|").append(elt.getAttribute("longitude"));
+												sb.append("|").append(elt.getAttribute("accuracy"));
 
-												//get date information
-												elt = (Element) mainElt.getElementsByTagName("dates").item(0);
-												String date = elt.getAttribute("taken");
+												sb.append("\n");
 
-												//get ownerlocation information
-												elt = (Element) mainElt.getElementsByTagName("owner").item(0);
-												String ownerlocation = elt.getAttribute("location");
-
-												String photoSt = id+"|"+owner+"|"+ownerlocation+"|"+secret+"|"+date+"|"+lat+"|"+lon;
+												String photoSt = sb.toString();
 												System.out.println(photoSt);
 
-												sch.append(photoSt).append("\n");
+												sch.append(photoSt);
 											}
 										});
 									}
@@ -163,7 +180,54 @@ public class PhotoSearch {
 	//private static String getMonth(int month){ return (month>=10?"":"0")+month; }
 	private static String getDateStamp(int year, int month){ return year+"-"+((month>=10?"":"0")+month); }
 
-	//TODO get user information
 	//find user location with https://www.flickr.com/services/api/flickr.places.placesForUser.html
+	public static void getUserInfo(String photoInfoFile, String path, String fileName){
+
+		//initialise output file
+		new File(path).mkdirs();
+		try {
+			if(!new File(path+fileName).exists()) Files.createFile(Paths.get(path+fileName));
+		} catch (Exception e) { e.printStackTrace(); }
+
+		//load collection of users already in the file
+		HashSet<String> usersIdsDone = new HashSet<String>();
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(path+fileName));
+			String line;
+			while ((line = br.readLine()) != null) usersIdsDone.add(line.split("\\|")[0]);
+			br.close();
+		} catch (IOException e) { e.printStackTrace(); } finally { try { if (br != null)br.close(); } catch (Exception ex) { ex.printStackTrace(); } }
+
+		System.out.println(usersIdsDone.size() + " users located.");
+
+		//get list of users to find
+		HashSet<String> usersIds = new HashSet<String>();
+		try {
+			br = new BufferedReader(new FileReader(photoInfoFile));
+			String line;
+			while ((line = br.readLine()) != null) {
+				String userId = line.split("\\|")[1];
+				if(usersIdsDone.contains(userId)) continue;
+				usersIds.add(userId);
+			}
+			br.close();
+		} catch (IOException e) { e.printStackTrace(); } finally { try { if (br != null)br.close(); } catch (Exception ex) { ex.printStackTrace(); } }
+
+		System.out.println(usersIds.size() + " users to locate.");
+
+		/*
+		final ScrapingScheduler sch = new ScrapingScheduler(250, path, fileName, false);
+		for(String userId : usersIds) {
+			String url = 
+			sch.add(QueryType.XML, url, new Function(){
+				
+			}
+		}*/
+
+		/*for(int i=0; i<Config.FLICKR_API_KEYS.length; i++)
+			sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[i], true);*/
+
+	}
 
 }
