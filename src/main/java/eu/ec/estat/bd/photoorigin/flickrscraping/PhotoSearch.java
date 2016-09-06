@@ -83,7 +83,7 @@ public class PhotoSearch {
 						System.out.println("pages="+pages);
 
 						for(int page=1; page<=pages; page++){
-							final int pagef=page;
+							//final int pagef=page;
 							String url = urlQueryBaseNoKey + "&min_taken_date="+min_taken_date + "&max_taken_date="+max_taken_date + "&page="+page;
 							sch.add(QueryType.XML, url, new Function(){
 								public void execute(Object data) {
@@ -158,7 +158,6 @@ public class PhotoSearch {
 
 		for(int i=0; i<Config.FLICKR_API_KEYS.length; i++)
 			sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[i], true);
-		//sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[0], true);
 	}
 
 	//private static String getMonth(int month){ return (month>=10?"":"0")+month; }
