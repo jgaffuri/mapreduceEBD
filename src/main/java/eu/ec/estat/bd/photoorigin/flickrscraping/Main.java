@@ -36,11 +36,9 @@ public class Main {
 
 		//ps.save("out/flickr/", "nice_.txt");
 
-		int radius = 8;
-		String min_taken_date = "2000-01";
-		PhotoSearch ps = new PhotoSearch("lat", "43.695949", "lon", "7.271413", "radius", ""+radius, "min_taken_date", min_taken_date);
-		//ps.getAndSave("out/flickr/", "nice.txt");
-		ps.getAndSaveWithGenericScheduler("out/flickr/", "nice_"+radius+"km_"+min_taken_date+".txt");
+		int radius = 3;
+		PhotoSearch ps = new PhotoSearch(2014, 5, 2014, 10, "lat", "43.695949", "lon", "7.271413", "radius", ""+radius);
+		ps.getAndSaveWithGenericScheduler("out/flickr/", "nice_"+radius+"km_"+"2000-1"+".txt", true);
 
 		System.out.println("End");
 	}

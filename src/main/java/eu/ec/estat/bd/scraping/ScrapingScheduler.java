@@ -46,7 +46,7 @@ public class ScrapingScheduler {
 		Query qu = new Query(type, url, callback);
 		String sign = qu.getSignature();
 		synchronized (queries) {
-			if(querySignatures.contains(sign)) return false;
+			if(querySignatures.contains(sign)) { return false; }
 			querySignatures.add(sign);
 			return queries.add(qu);
 		}
@@ -62,11 +62,13 @@ public class ScrapingScheduler {
 		QueryType type;
 		String url;
 		Function callback;
-		private long timeStamp = System.currentTimeMillis();
 
-		public Query(QueryType type, String url, Function callback){ this.type=type; this.url=url; this.callback=callback; }
+		private int id;
+		private static int COUNT = 0;
+
+		public Query(QueryType type, String url, Function callback){ this.type=type; this.url=url; this.callback=callback; id=COUNT++; }
 		String getSignature(){ return url; }
-		public int compareTo(Query qu) { return (int)(timeStamp-qu.timeStamp); }
+		public int compareTo(Query qu) { return (int)(id-qu.id); }
 	}
 	public enum QueryType { STRING, XML }
 	public interface Function { void execute(Object data); }
@@ -80,15 +82,15 @@ public class ScrapingScheduler {
 	public ScrapingScheduler(int regularActionFreq, Function regularAction){
 		this.regularActionFreq=regularActionFreq; this.regularAction=regularAction;
 	}
-	public ScrapingScheduler(int regularSaveFreq, final String path, final String fileName){
+	public ScrapingScheduler(int regularSaveFreq, final String path, final String fileName, boolean deleteInitialFile){
 		this(regularSaveFreq, null);
 
 		//initialise output file
 		new File(path).mkdirs();
 		File outFile_ = new File(path+fileName);
 		try {
-			if(outFile_.exists()) outFile_.delete();
-			Files.createFile(Paths.get(path+fileName));
+			if(outFile_.exists() && deleteInitialFile) outFile_.delete();
+			if(!outFile_.exists()) Files.createFile(Paths.get(path+fileName));
 		} catch (Exception e) { e.printStackTrace(); }
 
 		this.regularAction = new Function() {
