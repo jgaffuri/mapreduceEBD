@@ -3,14 +3,6 @@
  */
 package eu.ec.estat.bd.photoorigin.flickrscraping;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashSet;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -221,8 +213,8 @@ public class PhotoSearch {
 		} catch (IOException e) { e.printStackTrace(); } finally { try { if (br != null)br.close(); } catch (Exception ex) { ex.printStackTrace(); } }
 
 		System.out.println(locationTexts.size() + " locations to handle.");
-*/
-		/*
+	 */
+	/*
 		//https://www.flickr.com/services/api/flickr.places.placesForUser.html
 		final ScrapingScheduler sch = new ScrapingScheduler(250, path, fileName, false);
 		for(String userId : usersIds) {
@@ -232,9 +224,9 @@ public class PhotoSearch {
 			}
 		}*/
 
-		/*for(int i=0; i<Config.FLICKR_API_KEYS.length; i++)
-			sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[i], true);*/
+	/*for(int i=0; i<Config.FLICKR_API_KEYS.length; i++)
+			sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[i], true);
 
-	}
+}*/
 
 }
