@@ -46,7 +46,7 @@ public class ScrapingScheduler {
 		Query qu = new Query(type, url, callback);
 		String sign = qu.getSignature();
 		synchronized (queries) {
-			if(querySignatures.contains(sign)) { System.err.println("Duplicate: "+sign); return false; }
+			if(querySignatures.contains(sign)) { System.out.println("Duplicate: "+sign); return false; }
 			querySignatures.add(sign);
 			return queries.add(qu);
 		}
