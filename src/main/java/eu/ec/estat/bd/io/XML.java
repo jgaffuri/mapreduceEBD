@@ -16,7 +16,9 @@ public class XML {
 	public static Document parseXMLfromURL(String urlString){
 		try{
 			InputStream in = new URL(urlString).openConnection().getInputStream();
-			return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
+			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
+			in.close();
+			return doc;
 		}
 		catch(Exception e){
 			e.printStackTrace();

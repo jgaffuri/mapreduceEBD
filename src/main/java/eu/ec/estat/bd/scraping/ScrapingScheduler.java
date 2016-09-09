@@ -137,16 +137,22 @@ public class ScrapingScheduler {
 				String url = qu.url + urlKeyPart;
 				if(verbose) System.out.println(url);
 
-				Object data;
-				if(qu.type == QueryType.XML) data = XML.parseXMLfromURL(url);
-				else data = IOUtil.getDataFromURL(url);
+				try {
+					Object data;
+					if(qu.type == QueryType.XML) data = XML.parseXMLfromURL(url);
+					else data = IOUtil.getDataFromURL(url);
 
-				qu.callback.execute(data);
+					qu.callback.execute(data);
 
-				count++;
-				if(regularAction!=null && regularActionFreq>0 && count>=regularActionFreq){
-					regularAction.execute(null);
-					count=0;
+					count++;
+					if(regularAction!=null && regularActionFreq>0 && count>=regularActionFreq){
+						regularAction.execute(null);
+						count=0;
+					}
+				} catch (Exception e) {
+					System.err.println("Problem with query: " + qu);
+					synchronized (queries) { queries.add(qu); }
+					e.printStackTrace();
 				}
 			}
 		}, 0, timeMilliSeconds, TimeUnit.MILLISECONDS);
