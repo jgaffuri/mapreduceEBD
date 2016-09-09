@@ -14,16 +14,14 @@ import org.w3c.dom.Document;
 public class XML {
 
 	public static Document parseXMLfromURL(String urlString){
+		Document doc = null;
 		try{
 			InputStream in = new URL(urlString).openConnection().getInputStream();
-			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
 			in.close();
-			return doc;
 		}
-		catch(Exception e){
-			e.printStackTrace();
-		}       
-		return null;
+		catch(Exception e){ e.printStackTrace(); }
+		return doc;
 	}
 
 }
