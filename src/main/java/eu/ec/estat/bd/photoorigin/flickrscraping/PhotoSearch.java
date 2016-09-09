@@ -53,7 +53,7 @@ public class PhotoSearch {
 	}
 
 
-	public void getAndSaveWithGenericScheduler(final String path, final String fileName, boolean deleteInitialFile){
+	public void getAndSaveWithGenericScheduler(final String path, final String fileName, boolean deleteInitialFile, final boolean verbose){
 
 		final ScrapingScheduler sch = new ScrapingScheduler(250, path, fileName, deleteInitialFile);
 
@@ -80,7 +80,7 @@ public class PhotoSearch {
 
 						mainElt = (Element) mainElt.getElementsByTagName("photos").item(0);
 						final int pages = Integer.parseInt(mainElt.getAttribute("pages"));
-						System.out.println("pages="+pages);
+						if(verbose) System.out.println("pages="+pages);
 
 						for(int page=1; page<=pages; page++){
 							//final int pagef=page;
@@ -152,7 +152,7 @@ public class PhotoSearch {
 												sb.append("\n");
 
 												String photoSt = sb.toString();
-												System.out.println(photoSt);
+												if(verbose) System.out.println(photoSt);
 
 												sch.append(photoSt);
 											}
@@ -168,7 +168,7 @@ public class PhotoSearch {
 		}
 
 		for(int i=0; i<Config.FLICKR_API_KEYS.length; i++)
-			sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[i], true);
+			sch.launchExecutorAtFixedRate(1000, "&api_key=" + Config.FLICKR_API_KEYS[i], verbose);
 	}
 
 	//private static String getMonth(int month){ return (month>=10?"":"0")+month; }
