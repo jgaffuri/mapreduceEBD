@@ -65,8 +65,9 @@ public class ScrapingScheduler {
 
 		private int id;
 		private static int COUNT = 0;
+		public void newId() { this.id=COUNT++; }
 
-		public Query(QueryType type, String url, Function callback){ this.type=type; this.url=url; this.callback=callback; id=COUNT++; }
+		public Query(QueryType type, String url, Function callback){ this.type=type; this.url=url; this.callback=callback; newId(); }
 		String getSignature(){ return url; }
 		public int compareTo(Query qu) { return (int)(id-qu.id); }
 	}
@@ -161,6 +162,7 @@ public class ScrapingScheduler {
 
 				} catch (Exception e) {
 					System.err.println("Problem with query: " + url);
+					qu.newId();
 					synchronized (queries) { queries.add(qu); }
 					e.printStackTrace();
 				}
