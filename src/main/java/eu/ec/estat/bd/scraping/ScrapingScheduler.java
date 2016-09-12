@@ -160,7 +160,7 @@ public class ScrapingScheduler {
 						count=0;
 					}
 
-				} catch (Exception e) {
+				} catch (NullPointerException e) {
 					System.err.println("Problem with query: " + url);
 					qu.newId();
 					synchronized (queries) { queries.add(qu); }
