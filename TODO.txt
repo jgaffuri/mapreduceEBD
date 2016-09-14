@@ -3,7 +3,7 @@ flikr:
 number of users, total and by month
 if too few, get more (tw, pan, etc.)
 retrieve users' locations
- - desc txt - geocoding
+ - desc txt - geocoding (gWS)
  - no desc txt - photo sample location
 define geo/time resolution (cnt/month) and show aggregates
 
@@ -20,6 +20,8 @@ unique users: 7761
 -> 40 users per month
 Number of users with location text: 4297
 -> 22 users per month
+
+Number of unique user location text: 2188
 
 yearly time resolution?
 
