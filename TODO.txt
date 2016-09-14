@@ -10,3 +10,12 @@ define geo/time resolution (cnt/month) and show aggregates
 
 write mvn deploy
 
+
+--------------
+Nice test case
+Photos - 8km from "43.695949", "7.271413", since 2000-01
+nb months: 12*16=192
+nb=134130
+unique users: 7761
+-> 40 users per month
+

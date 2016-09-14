@@ -14,9 +14,10 @@ import java.util.HashSet;
  *
  */
 public class Photo {
-	String id,owner,ownerlocation,secret,taken,place_id,woeid;
+	String id,secret,taken,place_id,woeid;
 	double latitude, longitude;
 	int accuracy;
+	Owner owner;
 
 
 	/**
@@ -32,10 +33,11 @@ public class Photo {
 			while((line = br.readLine()) != null) {
 				Photo p = new Photo();
 				String[] data = line.split("\\|", -1);
+
 				int i=0;
 				p.id = data[i++];
-				p.owner = data[i++];
-				p.ownerlocation = data[i++];
+				String ownerId = data[i++];
+				String ownerlocationText = data[i++];
 				p.secret = data[i++];
 				p.taken = data[i++];
 				p.latitude = Double.parseDouble(data[i++]);
@@ -43,6 +45,9 @@ public class Photo {
 				p.accuracy = Integer.parseInt(data[i++]);
 				p.place_id = data[i++];
 				p.woeid = data[i++];
+
+				Owner.setOwner(p, ownerId, ownerlocationText);
+
 				photos.add(p);
 			}
 		} catch (IOException e) { e.printStackTrace();
