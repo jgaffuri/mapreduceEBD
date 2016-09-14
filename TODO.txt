@@ -1,2 +1,12 @@
+
+flikr:
+number of users, total and by month
+if too few, get more (tw, pan, etc.)
+retrieve users' locations
+ - desc txt - geocoding
+ - no desc txt - photo sample location
+define geo/time resolution (cnt/month) and show aggregates
+
+
 write mvn deploy
 
