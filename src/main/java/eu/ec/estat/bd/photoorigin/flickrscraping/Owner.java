@@ -29,10 +29,11 @@ public class Owner {
 	}
 
 	public static int getOwnerNumber(){ return INDEX.size(); }
-/*
+
 	public static int getOwnerWithLocationTextNumber(){
-		
-		return INDEX.size();
-		}*/
+		int nb=0;
+		for(Owner ow : INDEX.values()) if(ow.locationText != null && !"".equals(ow.locationText)) nb++;
+		return nb;
+	}
 
 }

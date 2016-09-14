@@ -18,4 +18,8 @@ nb months: 12*16=192
 nb=134130
 unique users: 7761
 -> 40 users per month
+Number of users with location text: 4297
+-> 22 users per month
+
+yearly time resolution?
 

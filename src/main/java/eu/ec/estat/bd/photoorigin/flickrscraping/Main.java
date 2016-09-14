@@ -26,8 +26,7 @@ public class Main {
 		Collection<Photo> photos = Photo.load("out/flickr/nice_8km_2000-01.txt");
 		System.out.println("Number of photos: "+photos.size());
 		System.out.println("Number of users: "+Owner.getOwnerNumber());
-		
-		
+		System.out.println("Number of users with location text: "+Owner.getOwnerWithLocationTextNumber());
 
 		System.out.println("End");
 	}
