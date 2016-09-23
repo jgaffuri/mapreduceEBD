@@ -3,9 +3,13 @@
  */
 package eu.ec.estat.bd.azure;
 
+import java.io.File;
+import java.io.FileInputStream;
+
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 
 import eu.ec.estat.bd.Config;
@@ -30,6 +34,7 @@ public class Test {
 			CloudStorageAccount storageAccount = CloudStorageAccount.parse(Config.azureStorageConnectionString);
 			CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
 			CloudBlobContainer container = blobClient.getContainerReference("containerfromjava");
+			//CloudBlobContainer container = blobClient.getContainerReference("testblob");
 
 			// Create the container if it does not exist.
 			//container.createIfNotExists();
@@ -40,12 +45,13 @@ public class Test {
 			//container.uploadPermissions(containerPermissions);
 
 			//Upload blob into container
-			// Create or overwrite the blob with contents from a local file.
+			CloudBlockBlob blob = container.getBlockBlobReference("miserables.txt");
 			//CloudBlockBlob blob = container.getBlockBlobReference("eurostat.png");
 			//CloudBlockBlob blob = container.getBlockBlobReference("test.txt");
+			File source = new File("H:\\desktop\\miserables.txt");
 			//File source = new File("src\\main\\resources\\eurostat.png");
 			//File source = new File("src\\main\\resources\\test.txt");
-			//blob.upload(new FileInputStream(source), source.length());
+			blob.upload(new FileInputStream(source), source.length());
 
 			//List the blobs in a container
 			for (ListBlobItem blobItem : container.listBlobs())
