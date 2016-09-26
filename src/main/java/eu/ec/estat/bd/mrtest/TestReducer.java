@@ -1,6 +1,3 @@
-/**
- * 
- */
 package eu.ec.estat.bd.mrtest;
 
 import java.io.IOException;

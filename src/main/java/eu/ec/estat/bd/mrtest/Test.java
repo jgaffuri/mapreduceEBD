@@ -1,6 +1,3 @@
-/**
- * 
- */
 package eu.ec.estat.bd.mrtest;
 
 import org.apache.hadoop.conf.Configuration;

@@ -19,27 +19,49 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
-				<configuration>
-					<verbose>true</verbose>
-					<fork>true</fork>
-					<showDeprecation>true</showDeprecation>
-					<showWarnings>true</showWarnings>
-					<!--<executable>C:\Program Files\Java\jdk1.8.0_71\bin\javac.exe</executable> -->
-					<compilerVersion>1.6</compilerVersion>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
-				<configuration>
-					<outputDirectory>${basedir}</outputDirectory>
-				</configuration>
-			</plugin>
+
+		<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <verbose>true</verbose>
+          <fork>true</fork>
+		  <executable>C:\Program Files\Java\jdk1.8.0_71\bin\javac.exe</executable>
+          <compilerVersion>1.7</compilerVersion>
+        </configuration>
+      </plugin>
+		
+					<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-jar-plugin</artifactId> -->
+			<!-- <version>2.6</version> -->
+			<!-- <configuration> -->
+			<!-- <outputDirectory>${basedir}</outputDirectory> -->
+			<!-- </configuration> -->
+			<!-- </plugin> -->
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-shade-plugin</artifactId> -->
+			<!-- <version>2.3</version> -->
+			<!-- <configuration> -->
+			<!-- <transformers> -->
+			<!-- <transformer -->
+			<!-- implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"> -->
+			<!-- </transformer> -->
+			<!-- </transformers> -->
+			<!-- </configuration> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <phase>package</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>shade</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
+
+		
 		</plugins>
 	</build>
 
@@ -57,6 +79,19 @@
 			<version>${hadoop.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.hadoop</groupId> -->
+		<!-- <artifactId>hadoop-mapreduce-client-common</artifactId> -->
+		<!-- <version>${hadoop.version}</version> -->
+		<!-- <scope>provided</scope> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.hadoop</groupId> -->
+		<!-- <artifactId>hadoop-common</artifactId> -->
+		<!-- <version>${hadoop.version}</version> -->
+		<!-- <scope>provided</scope> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>junit</groupId>
