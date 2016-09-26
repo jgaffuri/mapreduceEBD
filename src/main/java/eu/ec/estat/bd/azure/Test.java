@@ -33,7 +33,8 @@ public class Test {
 			// Retrieve storage account, blob client and container
 			CloudStorageAccount storageAccount = CloudStorageAccount.parse(Config.azureStorageConnectionString);
 			CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
-			CloudBlobContainer container = blobClient.getContainerReference("containerfromjava");
+			//CloudBlobContainer container = blobClient.getContainerReference("containerfromjava");
+			CloudBlobContainer container = blobClient.getContainerReference("estatbdcluster-1");
 			//CloudBlobContainer container = blobClient.getContainerReference("testblob");
 
 			// Create the container if it does not exist.
@@ -45,13 +46,14 @@ public class Test {
 			//container.uploadPermissions(containerPermissions);
 
 			//Upload blob into container
-			CloudBlockBlob blob = container.getBlockBlobReference("miserables.txt");
+			//CloudBlockBlob blob = container.getBlockBlobReference("miserables.txt");
+			//CloudBlockBlob blob = container.getBlockBlobReference("example/data/gutenberg/miserables.txt");
 			//CloudBlockBlob blob = container.getBlockBlobReference("eurostat.png");
 			//CloudBlockBlob blob = container.getBlockBlobReference("test.txt");
-			File source = new File("H:\\desktop\\miserables.txt");
+			//File source = new File("H:\\desktop\\miserables.txt");
 			//File source = new File("src\\main\\resources\\eurostat.png");
 			//File source = new File("src\\main\\resources\\test.txt");
-			blob.upload(new FileInputStream(source), source.length());
+			//blob.upload(new FileInputStream(source), source.length());
 
 			//List the blobs in a container
 			for (ListBlobItem blobItem : container.listBlobs())

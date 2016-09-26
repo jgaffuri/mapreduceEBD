@@ -33,14 +33,16 @@ public class Test {
 		job.setOutputValueClass(IntWritable.class);
 
 		//set input path
-		FileInputFormat.addInputPath(job, new Path("/user/gaffuju/test/test.txt"));
+		FileInputFormat.addInputPath(job, new Path(args[0]));
 
+		//"/user/gaffuju/test/test.txt"
+		//"/user/gaffuju/test/output"
 		//azure
 		//wasbs:///example/data/gutenberg/davinci.txt
 		//wasbs:///example/data/wordcountout
-		
+
 		//set output path
-		Path outputPath = new Path("/user/gaffuju/test/output");
+		Path outputPath = new Path(args[1]);
 		FileSystem.get(conf).delete(outputPath, true);
 		FileOutputFormat.setOutputPath(job, outputPath);
 
