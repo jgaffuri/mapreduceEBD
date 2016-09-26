@@ -35,6 +35,10 @@ public class Test {
 		//set input path
 		FileInputFormat.addInputPath(job, new Path("/user/gaffuju/test/test.txt"));
 
+		//azure
+		//wasbs:///example/data/gutenberg/davinci.txt
+		//wasbs:///example/data/wordcountout
+		
 		//set output path
 		Path outputPath = new Path("/user/gaffuju/test/output");
 		FileSystem.get(conf).delete(outputPath, true);
