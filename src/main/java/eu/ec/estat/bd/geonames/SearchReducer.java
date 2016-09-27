@@ -1,7 +1,9 @@
 package eu.ec.estat.bd.geonames;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -9,14 +11,21 @@ import org.apache.hadoop.mapreduce.Reducer;
  * @author julien gaffuri
  *
  */
-public class SearchReducer extends Reducer<Text, Text, Text, Text> {
+public class SearchReducer extends Reducer<IntWritable, Text, IntWritable, Text> {
 
 	@Override
-	public void reduce(Text score, Iterable<Text> lines, Context context) throws IOException, InterruptedException {
+	public void reduce(IntWritable key, Iterable<Text> scoredLines, Context context) throws IOException, InterruptedException {
 
-		//String searchTerm = context.getConfiguration().get("searchTerm");
+		int nb = Integer.parseInt(context.getConfiguration().get("nb"));
+
+		//sort scoredlines
+		ArrayList<String> scoredLines_ = new ArrayList<String>();
+		
+		
 		//merge info of mappers
-		for (Text line : lines) context.write(score, line);
+		/*for (IntWritable score : scores) {
+			context.write(line, score);
+		}*/
 	}
 
 }

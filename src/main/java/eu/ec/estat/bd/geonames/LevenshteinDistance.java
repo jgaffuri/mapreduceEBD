@@ -48,18 +48,25 @@ public class LevenshteinDistance {
 	}
 
 
+/*
+	public static void main(String[] args) {
+		System.out.println(get("senningerbergguygyugyugyugyuguyg","senningerberg"));
+		System.out.println(get("senningerberg","senningerbergguygyugyugyugyuguyg"));
+		System.out.println(get("senningerberg","aaa"));
+		System.out.println(get("senningerberg","aaaaaa"));
+		System.out.println(get("senningerberg","aaaaaaaaa"));
+		System.out.println(get("senningerberg","aaaaaaaaaaaa"));
 
-	/*public static void main(String[] args) {
-		System.out.println(levenshteinDistance("senningerberg","senningerberg"));
-		System.out.println(levenshteinDistance("senningerberg","Senningerberg"));
-		System.out.println(levenshteinDistance("senningerberg","fdgbjdb"));
-		System.out.println(levenshteinDistance("senningerberg","aaaaaa"));
-		System.out.println(levenshteinDistance("senningerberg","aaaa"));
-		System.out.println(levenshteinDistance("senningerberg","sennin"));
-		System.out.println(levenshteinDistance("senningerberg","gerber"));
-		System.out.println(levenshteinDistance("senningerberg","senningerberg, luxembourg"));
-		System.out.println(levenshteinDistance("senningerberg","seningerberg"));
-		System.out.println(levenshteinDistance("senningerberg","sieningerberg"));
-	}*/
-
+		System.out.println(get("senningerberg","senningerberg"));
+		System.out.println(get("senningerberg","Senningerberg"));
+		System.out.println(get("senningerberg","fdgbjdb"));
+		System.out.println(get("senningerberg","aaaaaa"));
+		System.out.println(get("senningerberg","aaaa"));
+		System.out.println(get("senningerberg","sennin"));
+		System.out.println(get("senningerberg","gerber"));
+		System.out.println(get("senningerberg","senningerberg, luxembourg"));
+		System.out.println(get("senningerberg","seningerberg"));
+		System.out.println(get("senningerberg","sieningerberg"));
+	}
+*/
 }
