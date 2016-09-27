@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.geonames;
+package eu.ec.estat.bd.geonames.serachmr;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -20,6 +20,7 @@ public class Search {
 		//build job
 		Configuration conf = new Configuration();
 		conf.set("searchTerm", args[1]);
+		conf.set("nb", args[2]);
 		Job job = Job.getInstance(conf);
 
 		job.setJarByClass(Search.class);
@@ -35,7 +36,7 @@ public class Search {
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 
 		//set output path
-		Path outputPath = new Path(args[2]);
+		Path outputPath = new Path(args[3]);
 		FileSystem.get(conf).delete(outputPath, true);
 		FileOutputFormat.setOutputPath(job, outputPath);
 

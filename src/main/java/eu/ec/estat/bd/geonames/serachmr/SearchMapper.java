@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.geonames;
+package eu.ec.estat.bd.geonames.serachmr;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,6 +7,9 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+
+import eu.ec.estat.bd.geonames.GeoNameEntry;
+import eu.ec.estat.bd.geonames.LevenshteinDistance;
 
 /**
  * @author julien gaffuri
