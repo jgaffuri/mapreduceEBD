@@ -22,7 +22,7 @@ public class SearchReducer extends Reducer<IntWritable, Text, IntWritable, Text>
 
 		//sort scoredlines
 		scoredLines_.sort(new Comparator<String>(){
-			public int compare(String s1, String s2) { return getScore(s2) - getScore(s1); }
+			public int compare(String s1, String s2) { return getScore(s1) - getScore(s2); }
 		});
 
 		int nb = Integer.parseInt(context.getConfiguration().get("nb"));

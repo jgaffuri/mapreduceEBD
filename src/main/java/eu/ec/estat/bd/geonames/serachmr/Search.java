@@ -29,8 +29,8 @@ public class Search {
 		job.setMapperClass(SearchMapper.class);
 		job.setCombinerClass(SearchReducer.class);
 		job.setReducerClass(SearchReducer.class);
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(IntWritable.class);
+		job.setOutputKeyClass(IntWritable.class);
+		job.setOutputValueClass(Text.class);
 
 		//set input path
 		FileInputFormat.addInputPath(job, new Path(args[0]));
