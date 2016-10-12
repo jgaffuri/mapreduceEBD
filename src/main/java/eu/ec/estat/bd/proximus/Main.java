@@ -107,37 +107,21 @@ public class Main {
 	public static void validateEurostatGeostat() throws ShapefileException, MalformedURLException, IOException{
 		//test consistency between estat NUTS3/LAU data and geostat grid
 
-		//TODO redo
+		//load grid cells data: id-population. only csv?
 
-		//load estat pop data
-		//HashMap<String, String> estatData = DicUtil.load(ESTAT_POP_PATH, ",");
+		//load intersection matrix
 
-		//load nuts regions
-		ShapefileReader r = new ShapefileReader(new ShpFiles(new File(NUTS_PATH)), true, true, new GeometryFactory());
-
-		//load grid cells
-
-
-		//go through nuts regions
-		while (r.hasNext()) {
-			Geometry geom = (Geometry) r.nextRecord().shape();
-			System.out.println(geom);
-
-			//get grid cell intersecting it
-			//compute intersection
-			//add cell data for each cell, depending on intersection area
-			//produce csv file with data + difference
-
-		}
-		r.close();
-
+		//go through list of estat SU
+		//get list of cells from matrix
+		//compute population from cell population using matrix data
+		//save as csv
 	}
 
 	public static void getBuildingStatByGridCell() {
 		//intersection between geostat grid and building layer
 
 		//go through grid cells
-		//get all buildings intersecting the grid
+		//get all buildings intersecting the grid (with spatial index)
 		//compute stat on buildings: total area/volume, number, building size distribution
 		//compute also building density from pop data. Asumption: should be +/- constant.
 		//export as csv file
@@ -145,9 +129,12 @@ public class Main {
 
 	public static void getPopulationGridFromMobilePhoneData() {
 
+		//load intersection matrix data
+		//load grid cell building statistics data
+
 		//go through voronoi cells
-		//get all grid cells intersecting
-		//compute value of cell: naive approach (based on cell area) and with building stats + difference
+		//get all grid cells intersecting (from intersection matrix)
+		//compute value of cell (weighted part): naive approach (based on cell area) and with building stats + difference
 		//export as csv
 
 	}
