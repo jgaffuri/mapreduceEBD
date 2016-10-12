@@ -27,6 +27,9 @@ import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import eu.ec.estat.java4eurostat.base.StatsHypercube;
+import eu.ec.estat.java4eurostat.base.StatsIndex;
+import eu.ec.estat.java4eurostat.io.CSV;
 import eu.ec.estat.java4eurostat.io.DicUtil;
 
 /**
@@ -36,13 +39,19 @@ import eu.ec.estat.java4eurostat.io.DicUtil;
 public class Main {
 	public static String BASE_PATH = "A:/geodata/";
 	public static String ESTAT_POP_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
+	public static String GEOSTAT_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/grid_pop_2011.csv";
 	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/nuts3.shp";
 	public static String GEOSTAT_GRID_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH + "BE_mobile_phone_proximus/heatmap_final_ETRS989.shp";
 
+	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_nuts_grid.csv";
+	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_proximus_grid.csv";
+
 	/**
+	 * @param name1
 	 * @param shp1
 	 * @param idField1
+	 * @param name2
 	 * @param shp2
 	 * @param idField2
 	 * @param out
@@ -50,11 +59,14 @@ public class Main {
 	 * @throws MalformedURLException
 	 * @throws IOException
 	 */
-	public static void computeStatUnitDatasetsIntersectionMatrix(String shp1, String idField1, String shp2, String idField2, String out) throws ShapefileException, MalformedURLException, IOException{
+	public static void computeStatUnitDatasetsIntersectionMatrix(String name1, String shp1, String idField1, String name2, String shp2, String idField2, String out) throws ShapefileException, MalformedURLException, IOException{
 		//create out file
 		File outFile = new File(out);
 		if(outFile.exists()) outFile.delete();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
+		//write header
+		bw.write(name1+","+name2+","+name2+"_to_"+name1+","+name1+"_to_"+name2);
+		bw.newLine();
 
 		//load feature collections
 		System.out.print("Loading...");
@@ -78,7 +90,7 @@ public class Main {
 				if(interArea == 0) continue;
 
 				//compute area ratios
-				double ratio1 = interArea/a1, ratio2 = interArea/geom2.getArea();
+				double ratio2 = interArea/a1, ratio1 = interArea/geom2.getArea();
 
 				//store relation data
 				bw.write(id1+","+f2.getAttribute(idField2).toString()+","+ratio1+","+ratio2);
@@ -124,19 +136,50 @@ public class Main {
 
 	//compute Eurostat population dataset from geostat grid and compare with published one
 	//TODO: get pop data at LAU level from fabio
-	public static void validateEurostatGeostat() throws ShapefileException, MalformedURLException, IOException{
+	public static void validateEurostatGeostat(String out) throws ShapefileException, MalformedURLException, IOException{
 		//test consistency between estat NUTS3/LAU data and geostat grid
 
-		//load grid cells data: id-population. only csv?
-		//load estat population data: id-population
+		//load estat population data
 		HashMap<String, String> estatPop = DicUtil.load(ESTAT_POP_PATH, ",");
-		System.out.println(estatPop);
+		//load grid cells data
+		HashMap<String, String> geostatPop = DicUtil.load(GEOSTAT_POP_PATH, ",");
 		//load intersection matrix
+		StatsHypercube matrix = CSV.load(matrix_nuts_grid, "grid_to_nuts"); matrix.delete("nuts_to_grid");
+		StatsIndex matrixI = new StatsIndex(matrix, "nuts", "grid"); matrix = null;
+		//matrixI.print();
+
+		//create out file
+		File outFile = new File(out);
+		if(outFile.exists()) outFile.delete();
+		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
+		//write header
+		bw.write("nuts,EBpop,fromGridPop,diff,error");
+		bw.newLine();
 
 		//go through list of estat SU
-		//get list of cells from matrix
-		//compute population from cell population using matrix data
-		//save as csv: id-population-populationComputed-difference
+		for(String nutsId : matrixI.getKeys()){
+			//get list of cells from matrix
+			StatsIndex cells = matrixI.getSubIndex(nutsId);
+
+			//compute population from cell population using matrix data
+			double pop = 0;
+			for(String cellId : cells.getKeys()){
+				String gsPop = geostatPop.get(cellId);
+				if(gsPop == null) continue;
+				int cellPop = Integer.parseInt(gsPop);
+				double weight = cells.getSingleValue(cellId);
+				pop += cellPop*weight;
+			}
+
+			int ebPop = Integer.parseInt(estatPop.get(nutsId));
+			double diff = ebPop - pop;
+			double err = diff/ebPop;
+
+			//save as csv: id-population-populationComputed-difference
+			bw.write(nutsId+","+ebPop+","+pop+","+diff+","+err);
+			bw.newLine();
+		}
+		bw.close();
 	}
 
 	public static void getBuildingStatByGridCell() {
@@ -164,10 +207,10 @@ public class Main {
 	public static void main(String[] args) throws ShapefileException, MalformedURLException, IOException {
 		System.out.println("Start");
 
-		//computeStatUnitDatasetsIntersectionMatrix(NUTS_PATH, "NUTS_ID", GEOSTAT_GRID_PATH, "CELLCODE", BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_nuts_grid.csv");
-		//computeStatUnitDatasetsIntersectionMatrix(PROXIMUS_VORONOI, "voronoi_id", GEOSTAT_GRID_PATH, "CELLCODE", BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_proximus_grid.csv");
+		//computeStatUnitDatasetsIntersectionMatrix("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
+		//computeStatUnitDatasetsIntersectionMatrix("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
-		validateEurostatGeostat();
+		validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/comp/validation_nuts_geostat.csv");
 		//getBuildingStatByGridCell();
 		//getPopulationGridFromMobilePhoneData();
 
