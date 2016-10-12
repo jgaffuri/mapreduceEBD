@@ -24,10 +24,9 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class Main {
 	public static String BASE_PATH = "A:/geodata/";
 	public static String ESTAT_POP_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
-	public static String NUTS_PATH = BASE_PATH + "gisco_stat_units/NUTS_2013_01M_SH/data/NUTS_RG_01M_2013.shp";
-	public static String GEOSTAT_GRID_PATH = BASE_PATH + "GEOSTAT-grid-POP-1K-2011-V2-0-1/GEOSTATReferenceGrid/Grid_ETRS89_LAEA_1K-ref_GEOSTAT_POP_2011_V2_0_1.shp";
+	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/nuts3.shp";
+	public static String GEOSTAT_GRID_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH + "BE_mobile_phone_proximus/heatmap_final_ETRS989.shp";
-
 
 	/**
 	 * @param shp1
@@ -37,7 +36,7 @@ public class Main {
 	 * @throws MalformedURLException
 	 * @throws IOException
 	 */
-	public static void computeStatUnitDatasetsIntersectionMatrix(String shp1, String shp2, String out) throws ShapefileException, MalformedURLException, IOException{
+	public static void computeStatUnitDatasetsIntersectionMatrix(String shp1, String idField1, String shp2, String idField2, String out) throws ShapefileException, MalformedURLException, IOException{
 		ShapefileReader r1 = new ShapefileReader(new ShpFiles(new File(shp1)), true, true, new GeometryFactory());
 		ShapefileReader r2 = new ShapefileReader(new ShpFiles(new File(shp2)), true, true, new GeometryFactory());
 
@@ -88,7 +87,7 @@ public class Main {
 				if(area == 0) continue;
 
 				//compute area ratios
-				double ratio1 = a1/area, ratio2 = geom2.getArea()/area;
+				double ratio1 = area/a1, ratio2 = area/geom2.getArea();
 
 				//store relation data
 				bw.write(id1+","+id2+","+ratio1+","+ratio2);
@@ -143,8 +142,8 @@ public class Main {
 		System.out.println("Start");
 
 		//TODO check projection are the same
-		computeStatUnitDatasetsIntersectionMatrix(NUTS_PATH, GEOSTAT_GRID_PATH, BASE_PATH+"nuts_grid");
-		//computeStatUnitDatasetsIntersectionMatrix(PROXIMUS_VORONOI, GEOSTAT_GRID_PATH, BASE_PATH+"proximus_grid");
+		computeStatUnitDatasetsIntersectionMatrix(NUTS_PATH, "NUTS_ID", GEOSTAT_GRID_PATH, "CELLCODE", BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_nuts_grid.csv");
+		//computeStatUnitDatasetsIntersectionMatrix(PROXIMUS_VORONOI, GEOSTAT_GRID_PATH, BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_proximus_grid.csv");
 
 		//validateEurostatGeostat();
 		//getBuildingStatByGridCell();
