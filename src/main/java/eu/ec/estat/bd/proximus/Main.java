@@ -8,14 +8,22 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.geotools.data.shapefile.files.ShpFiles;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.FeatureSource;
 import org.geotools.data.shapefile.shp.ShapefileException;
-import org.geotools.data.shapefile.shp.ShapefileReader;
-import org.geotools.data.shapefile.shp.ShapefileReader.Record;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * @author julien Gaffuri
@@ -30,74 +38,82 @@ public class Main {
 
 	/**
 	 * @param shp1
+	 * @param idField1
 	 * @param shp2
+	 * @param idField2
 	 * @param out
 	 * @throws ShapefileException
 	 * @throws MalformedURLException
 	 * @throws IOException
 	 */
 	public static void computeStatUnitDatasetsIntersectionMatrix(String shp1, String idField1, String shp2, String idField2, String out) throws ShapefileException, MalformedURLException, IOException{
-		ShapefileReader r1 = new ShapefileReader(new ShpFiles(new File(shp1)), true, true, new GeometryFactory());
-		ShapefileReader r2 = new ShapefileReader(new ShpFiles(new File(shp2)), true, true, new GeometryFactory());
-
 		//create out file
 		File outFile = new File(out);
 		if(outFile.exists()) outFile.delete();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
 
+		//get input feature collections
+		FeatureCollection<SimpleFeatureType, SimpleFeature> fc1 = getFeatureCollection(shp1);
 
-		/*
-		 * TODO
-		 *  File file = new File("example.shp");
-    Map<String, Object> map = new HashMap<String, Object>();
-    map.put("url", file.toURI().toURL());
-
-    DataStore dataStore = DataStoreFinder.getDataStore(map);
-    String typeName = dataStore.getTypeNames()[0];
-
-    FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore
-            .getFeatureSource(typeName);
-    Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
-
-    FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
-    try (FeatureIterator<SimpleFeature> features = collection.features()) {
-        while (features.hasNext()) {
-            SimpleFeature feature = features.next();
-            System.out.print(feature.getID());
-            System.out.print(": ");
-            System.out.println(feature.getDefaultGeometryProperty().getValue());
-        }
-    }
-		 * 
-		 */
-
-		while (r1.hasNext()) {
-			Record obj1 = r1.nextRecord();
-			Geometry geom1 = (Geometry) obj1.shape();
+		FeatureIterator<SimpleFeature> it1 = fc1.features();
+		while (it1.hasNext()) {
+			//get input feature 1 data
+			SimpleFeature f1 = it1.next();
+			Geometry geom1 = (Geometry) f1.getDefaultGeometryProperty().getValue();
 			double a1 = geom1.getArea();
-			String id1 = "id1"; //TODO get id1
-			while (r2.hasNext()) {
-				Record obj2 = r2.nextRecord();
-				Geometry geom2 = (Geometry) obj2.shape();
-				String id2 = "id2"; //TODO get id2
+			String id1 = f1.getAttribute(idField1).toString();
+			//System.out.println(id1);
+
+			FeatureCollection<SimpleFeatureType, SimpleFeature> fc2 = getFeatureCollection(shp2, geom1.getEnvelope(), "the_geom");
+			FeatureIterator<SimpleFeature> it2 = fc2.features();
+			while (it2.hasNext()) {
+				//get input feature 2 data
+				SimpleFeature f2 = it2.next();
+				Geometry geom2 = (Geometry) f2.getDefaultGeometryProperty().getValue();
 
 				//check intersection
 				if(!geom1.intersects(geom2)) continue;
-				double area = geom1.intersection(geom2).getArea();
-				if(area == 0) continue;
+				double interArea = geom1.intersection(geom2).getArea();
+				if(interArea == 0) continue;
 
 				//compute area ratios
-				double ratio1 = area/a1, ratio2 = area/geom2.getArea();
+				double ratio1 = interArea/a1, ratio2 = interArea/geom2.getArea();
 
 				//store relation data
-				bw.write(id1+","+id2+","+ratio1+","+ratio2);
+				bw.write(id1+","+f2.getAttribute(idField2).toString()+","+ratio1+","+ratio2);
 				bw.newLine();
 			}
+			it2.close();
 		}
-		r1.close();
-		r2.close();
+		it1.close();
 		bw.close();
 
+	}
+
+	public static FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollection(String shpFilePath, Geometry intersects, String geometryAttribute){
+		//ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
+		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+		Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(intersects));
+		return getFeatureCollection(shpFilePath, filter);
+	}
+	public static FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollection(String shpFilePath){ return getFeatureCollection(shpFilePath, Filter.INCLUDE); }
+	public static FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollection(String shpFilePath, Filter filter){
+		try {
+			File file = new File(shpFilePath);
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("url", file.toURI().toURL());
+
+			DataStore dataStore = DataStoreFinder.getDataStore(map);
+			String typeName = dataStore.getTypeNames()[0];
+
+			FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
+			return source.getFeatures(filter);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 

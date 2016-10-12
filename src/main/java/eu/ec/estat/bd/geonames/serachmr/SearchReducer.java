@@ -2,6 +2,7 @@ package eu.ec.estat.bd.geonames.serachmr;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 
 import org.apache.hadoop.io.IntWritable;
@@ -21,7 +22,7 @@ public class SearchReducer extends Reducer<IntWritable, Text, IntWritable, Text>
 		for (Text scoredLine : scoredLines) scoredLines_.add(scoredLine.toString());
 
 		//sort scoredlines
-		scoredLines_.sort(new Comparator<String>(){
+		Collections.sort(scoredLines_, new Comparator<String>(){
 			public int compare(String s1, String s2) { return getScore(s1) - getScore(s2); }
 		});
 
