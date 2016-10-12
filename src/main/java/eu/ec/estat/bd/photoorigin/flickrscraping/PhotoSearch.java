@@ -9,10 +9,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import eu.ec.estat.bd.Config;
-import eu.ec.estat.bd.io.IOUtil;
 import eu.ec.estat.bd.scraping.ScrapingScheduler;
 import eu.ec.estat.bd.scraping.ScrapingScheduler.Function;
 import eu.ec.estat.bd.scraping.ScrapingScheduler.QueryType;
+import eu.ec.estat.java4eurostat.io.IOUtil;
 
 /**
  * @author Julien Gaffuri

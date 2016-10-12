@@ -14,8 +14,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import eu.ec.estat.bd.io.IOUtil;
-import eu.ec.estat.bd.io.XML;
+import eu.ec.estat.java4eurostat.io.IOUtil;
+import eu.ec.estat.java4eurostat.io.XML;
 
 
 /**
