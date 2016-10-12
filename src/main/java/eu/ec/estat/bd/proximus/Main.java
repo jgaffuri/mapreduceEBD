@@ -47,6 +47,9 @@ public class Main {
 	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_nuts_grid.csv";
 	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_proximus_grid.csv";
 
+
+	
+	
 	/**
 	 * @param name1
 	 * @param shp1
@@ -101,6 +104,9 @@ public class Main {
 
 	}
 
+
+	
+	
 	public static FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollection(String shpFilePath, Geometry intersects, String geometryAttribute){
 		//ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
@@ -133,6 +139,9 @@ public class Main {
 		return col;
 	}
 
+
+
+	
 
 	//compute Eurostat population dataset from geostat grid and compare with published one
 	//TODO: get pop data at LAU level from fabio
@@ -182,6 +191,8 @@ public class Main {
 		bw.close();
 	}
 
+
+	
 	public static void getBuildingStatByGridCell() {
 		//intersection between geostat grid and building layer
 
@@ -192,6 +203,8 @@ public class Main {
 		//export as csv file
 	}
 
+
+	
 	public static void getPopulationGridFromMobilePhoneData() {
 
 		//load intersection matrix data
