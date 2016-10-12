@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.geotools.data.DataStore;
@@ -24,6 +26,8 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
+
+import eu.ec.estat.java4eurostat.io.DicUtil;
 
 /**
  * @author julien Gaffuri
@@ -52,23 +56,20 @@ public class Main {
 		if(outFile.exists()) outFile.delete();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
 
-		//get input feature collections
-		FeatureCollection<SimpleFeatureType, SimpleFeature> fc1 = getFeatureCollection(shp1);
+		//load feature collections
+		System.out.print("Loading...");
+		Collection<SimpleFeature> fc1 = getFeatureCollectionF(shp1);
+		Collection<SimpleFeature> fc2 = getFeatureCollectionF(shp2);
+		System.out.println(" Done.");
 
-		FeatureIterator<SimpleFeature> it1 = fc1.features();
-		while (it1.hasNext()) {
-			//get input feature 1 data
-			SimpleFeature f1 = it1.next();
+		for(SimpleFeature f1 : fc1) {
 			Geometry geom1 = (Geometry) f1.getDefaultGeometryProperty().getValue();
 			double a1 = geom1.getArea();
 			String id1 = f1.getAttribute(idField1).toString();
 			System.out.println(id1);
 
-			FeatureCollection<SimpleFeatureType, SimpleFeature> fc2 = getFeatureCollection(shp2, geom1.getEnvelope(), "the_geom");
-			FeatureIterator<SimpleFeature> it2 = fc2.features();
-			while (it2.hasNext()) {
+			for(SimpleFeature f2 : fc2) {
 				//get input feature 2 data
-				SimpleFeature f2 = it2.next();
 				Geometry geom2 = (Geometry) f2.getDefaultGeometryProperty().getValue();
 
 				//check intersection
@@ -83,9 +84,7 @@ public class Main {
 				bw.write(id1+","+f2.getAttribute(idField2).toString()+","+ratio1+","+ratio2);
 				bw.newLine();
 			}
-			it2.close();
 		}
-		it1.close();
 		bw.close();
 
 	}
@@ -105,15 +104,21 @@ public class Main {
 
 			DataStore dataStore = DataStoreFinder.getDataStore(map);
 			String typeName = dataStore.getTypeNames()[0];
-
 			FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
+			dataStore.dispose();
 			return source.getFeatures(filter);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		} catch (MalformedURLException e) { e.printStackTrace();
+		} catch (IOException e) { e.printStackTrace(); }
 		return null;
+	}
+
+	public static Collection<SimpleFeature> getFeatureCollectionF(String shpFilePath){ return getFeatureCollectionF(shpFilePath, Filter.INCLUDE); }
+	public static Collection<SimpleFeature> getFeatureCollectionF(String shpFilePath, Filter filter){
+		Collection<SimpleFeature> col = new HashSet<SimpleFeature>();
+		FeatureIterator<SimpleFeature> it = getFeatureCollection(shpFilePath, filter).features();
+		while (it.hasNext()) col.add(it.next());
+		it.close();
+		return col;
 	}
 
 
@@ -124,6 +129,8 @@ public class Main {
 
 		//load grid cells data: id-population. only csv?
 		//load estat population data: id-population
+		HashMap<String, String> estatPop = DicUtil.load(ESTAT_POP_PATH, ",");
+		System.out.println(estatPop);
 		//load intersection matrix
 
 		//go through list of estat SU
