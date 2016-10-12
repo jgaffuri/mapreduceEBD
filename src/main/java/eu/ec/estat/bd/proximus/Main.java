@@ -62,7 +62,7 @@ public class Main {
 			Geometry geom1 = (Geometry) f1.getDefaultGeometryProperty().getValue();
 			double a1 = geom1.getArea();
 			String id1 = f1.getAttribute(idField1).toString();
-			//System.out.println(id1);
+			System.out.println(id1);
 
 			FeatureCollection<SimpleFeatureType, SimpleFeature> fc2 = getFeatureCollection(shp2, geom1.getEnvelope(), "the_geom");
 			FeatureIterator<SimpleFeature> it2 = fc2.features();
@@ -123,13 +123,13 @@ public class Main {
 		//test consistency between estat NUTS3/LAU data and geostat grid
 
 		//load grid cells data: id-population. only csv?
-
+		//load estat population data: id-population
 		//load intersection matrix
 
 		//go through list of estat SU
 		//get list of cells from matrix
 		//compute population from cell population using matrix data
-		//save as csv
+		//save as csv: id-population-populationComputed-difference
 	}
 
 	public static void getBuildingStatByGridCell() {
@@ -157,11 +157,10 @@ public class Main {
 	public static void main(String[] args) throws ShapefileException, MalformedURLException, IOException {
 		System.out.println("Start");
 
-		//TODO check projection are the same
-		computeStatUnitDatasetsIntersectionMatrix(NUTS_PATH, "NUTS_ID", GEOSTAT_GRID_PATH, "CELLCODE", BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_nuts_grid.csv");
-		//computeStatUnitDatasetsIntersectionMatrix(PROXIMUS_VORONOI, GEOSTAT_GRID_PATH, BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_proximus_grid.csv");
+		//computeStatUnitDatasetsIntersectionMatrix(NUTS_PATH, "NUTS_ID", GEOSTAT_GRID_PATH, "CELLCODE", BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_nuts_grid.csv");
+		//computeStatUnitDatasetsIntersectionMatrix(PROXIMUS_VORONOI, "voronoi_id", GEOSTAT_GRID_PATH, "CELLCODE", BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_proximus_grid.csv");
 
-		//validateEurostatGeostat();
+		validateEurostatGeostat();
 		//getBuildingStatByGridCell();
 		//getPopulationGridFromMobilePhoneData();
 
