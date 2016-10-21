@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,16 +16,23 @@ import java.util.Map;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
+import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.Transaction;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.shapefile.shp.ShapefileException;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 import eu.ec.estat.java4eurostat.base.StatsHypercube;
@@ -48,8 +56,8 @@ public class Main {
 	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_proximus_grid.csv";
 
 
-	
-	
+
+
 	/**
 	 * @param name1
 	 * @param shp1
@@ -107,16 +115,16 @@ public class Main {
 	}
 
 
-	
-	
-	public static FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollection(String shpFilePath, Geometry intersects, String geometryAttribute){
+
+
+	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Geometry intersects, String geometryAttribute){
 		//ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 		Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(intersects));
 		return getFeatureCollection(shpFilePath, filter);
 	}
-	public static FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollection(String shpFilePath){ return getFeatureCollection(shpFilePath, Filter.INCLUDE); }
-	public static FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollection(String shpFilePath, Filter filter){
+	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath){ return getFeatureCollection(shpFilePath, Filter.INCLUDE); }
+	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Filter filter){
 		try {
 			File file = new File(shpFilePath);
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -126,7 +134,7 @@ public class Main {
 			String typeName = dataStore.getTypeNames()[0];
 			FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
 			dataStore.dispose();
-			return source.getFeatures(filter);
+			return (SimpleFeatureCollection) source.getFeatures(filter);
 		} catch (MalformedURLException e) { e.printStackTrace();
 		} catch (IOException e) { e.printStackTrace(); }
 		return null;
@@ -143,7 +151,7 @@ public class Main {
 
 
 
-	
+
 
 	//compute Eurostat population dataset from geostat grid and compare with published one
 	//TODO: get pop data at LAU level from fabio
@@ -194,7 +202,7 @@ public class Main {
 	}
 
 
-	
+
 	public static void getBuildingStatByGridCell() {
 		//intersection between geostat grid and building layer
 
@@ -206,7 +214,7 @@ public class Main {
 	}
 
 
-	
+
 	public static void getPopulationGridFromMobilePhoneData() {
 
 		//load intersection matrix data
@@ -222,14 +230,81 @@ public class Main {
 	public static void main(String[] args) throws ShapefileException, MalformedURLException, IOException {
 		System.out.println("Start");
 
+		//computeGridAttribute(GEOSTAT_GRID_PATH);
+
 		//computeStatUnitDatasetsIntersectionMatrix("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//computeStatUnitDatasetsIntersectionMatrix("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
-		validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
+		//validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
 		//getBuildingStatByGridCell();
 		//getPopulationGridFromMobilePhoneData();
 
 		System.out.println("End");
 	}
+
+
+
+
+	/*
+	public static void computeGridAttribute(String gridSHP) throws ShapefileException, MalformedURLException, IOException{
+		try {
+			//1kmN3134E3799 MinN MinE
+
+			SimpleFeatureCollection sfs = getFeatureCollection(gridSHP);
+			FeatureIterator<SimpleFeature> it = sfs.features();
+			while (it.hasNext()){
+				SimpleFeature f = it.next();
+				Envelope env = ((Geometry) f.getDefaultGeometryProperty().getValue()).getEnvelopeInternal();
+				String n = ""+((int)env.getMinY()/1000);
+				String e = ""+((int)env.getMinX()/1000);
+				String id = "1kmN"+n+"E"+e;
+				//if(id.length()!=13) System.out.println(id);
+				f.setAttribute("CELLCODE", id);
+				//System.out.println( f.getAttribute("CELLCODE") );
+			}
+			it.close();
+
+			saveSHP(sfs, BASE_PATH + "BE_mobile_phone_proximus/mob/", "grid_.shp");
+
+		} catch (Exception e) { e.printStackTrace(); }
+
+	}
+
+
+	public static void saveSHP(SimpleFeatureCollection sfs, String outPath, String outFile) {
+		try {
+			new File(outPath).mkdirs();
+			ShapefileDataStoreFactory dsf = new ShapefileDataStoreFactory();
+			Map<String, Serializable> params = new HashMap<String, Serializable>();
+			params.put("url", new File(outPath+outFile).toURI().toURL());
+			params.put("create spatial index", Boolean.TRUE);
+			ShapefileDataStore ds = (ShapefileDataStore) dsf.createNewDataStore(params);
+			ds.createSchema(sfs.getSchema());
+
+			Transaction tr = new DefaultTransaction("create");
+			String tn = ds.getTypeNames()[0];
+			SimpleFeatureSource fs_ = ds.getFeatureSource(tn);
+
+			if (fs_ instanceof SimpleFeatureStore) {
+				SimpleFeatureStore fst = (SimpleFeatureStore) fs_;
+
+				fst.setTransaction(tr);
+				try {
+					fst.addFeatures(sfs);
+					tr.commit();
+				} catch (Exception problem) {
+					problem.printStackTrace();
+					tr.rollback();
+				} finally {
+					tr.close();
+				}
+			} else {
+				System.out.println(tn + " does not support read/write access");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	 */
 
 }
