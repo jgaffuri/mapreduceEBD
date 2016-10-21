@@ -37,15 +37,15 @@ import eu.ec.estat.java4eurostat.io.DicUtil;
  *
  */
 public class Main {
-	public static String BASE_PATH = "A:/geodata/";
+	public static String BASE_PATH = "H:/geodata/";
 	public static String ESTAT_POP_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
-	public static String GEOSTAT_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/grid_pop_2011.csv";
-	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/nuts3.shp";
-	public static String GEOSTAT_GRID_PATH = BASE_PATH + "BE_mobile_phone_proximus/comp/grid.shp";
+	public static String GEOSTAT_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/grid_pop_2011.csv";
+	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/nuts3.shp";
+	public static String GEOSTAT_GRID_PATH = BASE_PATH + "BE_mobile_phone_proximus//mob/grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH + "BE_mobile_phone_proximus/heatmap_final_ETRS989.shp";
 
-	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_nuts_grid.csv";
-	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/comp/matrix_proximus_grid.csv";
+	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
+	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_proximus_grid.csv";
 
 
 	
@@ -63,10 +63,12 @@ public class Main {
 	 * @throws IOException
 	 */
 	public static void computeStatUnitDatasetsIntersectionMatrix(String name1, String shp1, String idField1, String name2, String shp2, String idField2, String out) throws ShapefileException, MalformedURLException, IOException{
+
 		//create out file
 		File outFile = new File(out);
 		if(outFile.exists()) outFile.delete();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
+
 		//write header
 		bw.write(name1+","+name2+","+name2+"_to_"+name1+","+name1+"_to_"+name2);
 		bw.newLine();
@@ -223,7 +225,7 @@ public class Main {
 		//computeStatUnitDatasetsIntersectionMatrix("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//computeStatUnitDatasetsIntersectionMatrix("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
-		validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/comp/validation_nuts_geostat.csv");
+		validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
 		//getBuildingStatByGridCell();
 		//getPopulationGridFromMobilePhoneData();
 
