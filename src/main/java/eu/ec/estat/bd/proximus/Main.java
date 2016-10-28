@@ -217,37 +217,7 @@ public class Main {
 
 
 
-	public static void getPopulationGridFromMobilePhoneData() {
-
-		//load intersection matrix data
-		//load grid cell building statistics data
-
-		//go through voronoi cells
-		//get all grid cells intersecting (from intersection matrix)
-		//compute value of cell (weighted part): naive approach (based on cell area) and with building stats + difference
-		//export as csv
-
-	}
-
-	public static void main(String[] args) throws ShapefileException, MalformedURLException, IOException {
-		System.out.println("Start");
-
-		computeGridAttribute(GEOSTAT_GRID_PATH);
-
-		//computeStatUnitDatasetsIntersectionMatrix("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
-		//computeStatUnitDatasetsIntersectionMatrix("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
-
-		//validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
-		//getBuildingStatByGridCell();
-		//getPopulationGridFromMobilePhoneData();
-
-		System.out.println("End");
-	}
-
-
-
-
-	public static void computeGridAttribute(String gridSHP) throws ShapefileException, MalformedURLException, IOException{
+	/*public static void computeGridAttribute(String gridSHP) throws ShapefileException, MalformedURLException, IOException{
 		try {
 			//1kmN3134E3799 MinN MinE
 
@@ -305,10 +275,43 @@ public class Main {
 					transaction.close();
 				}
 			} else {
-				System.out.println(/*typeName +*/ " does not support read/write access");
+				System.out.println("not support read/write access");
 			}
 
 		} catch (Exception e) { e.printStackTrace(); }
+	}*/
+
+
+
+
+	public static void getPopulationGridFromMobilePhoneData() {
+
+		//load intersection matrix data
+		//load grid cell building statistics data
+
+		//go through voronoi cells
+		//get all grid cells intersecting (from intersection matrix)
+		//compute value of cell (weighted part): naive approach (based on cell area) and with building stats + difference
+		//export as csv
+
 	}
+
+	public static void main(String[] args) throws ShapefileException, MalformedURLException, IOException {
+		System.out.println("Start");
+
+		//computeGridAttribute(GEOSTAT_GRID_PATH);
+
+		//computeStatUnitDatasetsIntersectionMatrix("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
+		//computeStatUnitDatasetsIntersectionMatrix("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
+
+		validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
+		//getBuildingStatByGridCell();
+		//getPopulationGridFromMobilePhoneData();
+
+		System.out.println("End");
+	}
+
+
+
 
 }
