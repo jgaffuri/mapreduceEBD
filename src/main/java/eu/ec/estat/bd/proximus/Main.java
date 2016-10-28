@@ -26,6 +26,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -59,9 +61,9 @@ public class Main {
 
 
 	/**
-	 * @param name1
-	 * @param shp1
-	 * @param idField1
+	 * @param name1 name of the first dataset (for labelling)
+	 * @param shp1 path of the first dataset
+	 * @param idField1 name of the first dataset id attribute
 	 * @param name2
 	 * @param shp2
 	 * @param idField2
@@ -230,7 +232,7 @@ public class Main {
 	public static void main(String[] args) throws ShapefileException, MalformedURLException, IOException {
 		System.out.println("Start");
 
-		//computeGridAttribute(GEOSTAT_GRID_PATH);
+		computeGridAttribute(GEOSTAT_GRID_PATH);
 
 		//computeStatUnitDatasetsIntersectionMatrix("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//computeStatUnitDatasetsIntersectionMatrix("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
@@ -245,14 +247,26 @@ public class Main {
 
 
 
-	/*
 	public static void computeGridAttribute(String gridSHP) throws ShapefileException, MalformedURLException, IOException{
 		try {
 			//1kmN3134E3799 MinN MinE
 
-			SimpleFeatureCollection sfs = getFeatureCollection(gridSHP);
-			FeatureIterator<SimpleFeature> it = sfs.features();
-			while (it.hasNext()){
+			//open shapefile
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("url", new File(gridSHP).toURI().toURL());
+			DataStore dataStore = DataStoreFinder.getDataStore(map);
+			FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
+			FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(Filter.INCLUDE);
+
+			//create feature collection for modified features
+			//List<SimpleFeature> features = new ArrayList<SimpleFeature>();
+			//FeatureCollection<SimpleFeatureType, SimpleFeature> features;
+			DefaultFeatureCollection features = new DefaultFeatureCollection("internal", collection.getSchema());
+			//SimpleFeatureCollection simpleCollection = DataUtilities.simple(collection);
+
+			//read features
+			FeatureIterator<SimpleFeature> it = collection.features();
+			while (it.hasNext()) {
 				SimpleFeature f = it.next();
 				Envelope env = ((Geometry) f.getDefaultGeometryProperty().getValue()).getEnvelopeInternal();
 				String n = ""+((int)env.getMinY()/1000);
@@ -260,51 +274,41 @@ public class Main {
 				String id = "1kmN"+n+"E"+e;
 				//if(id.length()!=13) System.out.println(id);
 				f.setAttribute("CELLCODE", id);
-				//System.out.println( f.getAttribute("CELLCODE") );
+				System.out.println( f.getAttribute("CELLCODE") );
+
+				features.add(f);
 			}
 			it.close();
 
-			saveSHP(sfs, BASE_PATH + "BE_mobile_phone_proximus/mob/", "grid_.shp");
-
-		} catch (Exception e) { e.printStackTrace(); }
-
-	}
-
-
-	public static void saveSHP(SimpleFeatureCollection sfs, String outPath, String outFile) {
-		try {
-			new File(outPath).mkdirs();
-			ShapefileDataStoreFactory dsf = new ShapefileDataStoreFactory();
+			//create shapefile
+			File newFile = new File(BASE_PATH + "BE_mobile_phone_proximus//mob/grid____.shp");
+			ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
 			Map<String, Serializable> params = new HashMap<String, Serializable>();
-			params.put("url", new File(outPath+outFile).toURI().toURL());
+			params.put("url", newFile.toURI().toURL());
 			params.put("create spatial index", Boolean.TRUE);
-			ShapefileDataStore ds = (ShapefileDataStore) dsf.createNewDataStore(params);
-			ds.createSchema(sfs.getSchema());
+			ShapefileDataStore newDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
+			newDataStore.createSchema(collection.getSchema());
 
-			Transaction tr = new DefaultTransaction("create");
-			String tn = ds.getTypeNames()[0];
-			SimpleFeatureSource fs_ = ds.getFeatureSource(tn);
-
-			if (fs_ instanceof SimpleFeatureStore) {
-				SimpleFeatureStore fst = (SimpleFeatureStore) fs_;
-
-				fst.setTransaction(tr);
+			//write to shape file
+			Transaction transaction = new DefaultTransaction("create");
+			SimpleFeatureSource featureSource = newDataStore.getFeatureSource(newDataStore.getTypeNames()[0]);
+			if (featureSource instanceof SimpleFeatureStore) {
+				SimpleFeatureStore featureStore = (SimpleFeatureStore) featureSource;
+				featureStore.setTransaction(transaction);
 				try {
-					fst.addFeatures(sfs);
-					tr.commit();
+					featureStore.addFeatures(features);
+					transaction.commit();
 				} catch (Exception problem) {
 					problem.printStackTrace();
-					tr.rollback();
+					transaction.rollback();
 				} finally {
-					tr.close();
+					transaction.close();
 				}
 			} else {
-				System.out.println(tn + " does not support read/write access");
+				System.out.println(/*typeName +*/ " does not support read/write access");
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
+		} catch (Exception e) { e.printStackTrace(); }
 	}
-	 */
 
 }
