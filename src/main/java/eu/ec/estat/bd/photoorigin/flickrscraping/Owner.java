@@ -38,7 +38,6 @@ public class Owner implements Comparable<Owner>{
 		p.owner=ow; ow.photos.add(p);
 	}
 
-	public static int getOwnerNumber(){ return get().size(); }
 	public static int getOwnerWithLocationTextNumber(){
 		int nb=0;
 		for(Owner ow : get()) if(ow.hasLocationText()) nb++;
@@ -48,7 +47,7 @@ public class Owner implements Comparable<Owner>{
 		for(Owner ow : get()) if(ow.hasLocationText()) out.println(ow.locationText);
 	}
 
-	public static void printOwnerPhotos(PrintStream out){
+	public static void printOwnerInfos(PrintStream out){
 		ArrayList<Owner> list = new ArrayList<Owner>(); list.addAll(get());
 		Collections.sort(list);
 		for(Owner ow : list) out.println(ow.photos.size()+","+ow.id+","+ow.locationText);

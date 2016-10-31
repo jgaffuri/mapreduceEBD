@@ -4,8 +4,6 @@
 package eu.ec.estat.bd.photoorigin.flickrscraping;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.Collection;
 
 /**
@@ -27,13 +25,15 @@ public class Main {
 		 */
 
 		Collection<Photo> photos = Photo.load("out/flickr/nice_8km_2000-01.txt");
+
+		/*
 		System.out.println("Number of photos: "+photos.size());
-		System.out.println("Number of users: "+Owner.getOwnerNumber());
+		System.out.println("Number of users: "+Owner.get().size());
 		System.out.println("Number of users with location text: "+Owner.getOwnerWithLocationTextNumber());
-		System.out.println("Number of unique user location texts: "+Owner.getOwnerLocationText().size());
+		System.out.println("Number of unique user location texts: "+Owner.getOwnerLocationText().size());*/
 
 		//Owner.printLocationTexts(System.out);
-		Owner.printOwnerPhotos( new PrintStream(new FileOutputStream("out/flickr/st.csv", true)) );
+		//Owner.printOwnerInfos( new PrintStream(new FileOutputStream("out/flickr/st.csv", true)) );
 
 		System.out.println("End");
 	}
