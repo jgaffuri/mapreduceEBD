@@ -32,10 +32,10 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class FeatureUtil {
 
-	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Geometry intersects, String geometryAttribute){
+	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Geometry geomIntersects, String geometryAttribute){
 		//ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
-		Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(intersects));
+		Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(geomIntersects));
 		return getFeatureCollection(shpFilePath, filter);
 	}
 	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath){ return getFeatureCollection(shpFilePath, Filter.INCLUDE); }

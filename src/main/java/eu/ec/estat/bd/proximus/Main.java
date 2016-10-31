@@ -28,9 +28,12 @@ public class Main {
 	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/nuts3.shp";
 	public static String GEOSTAT_GRID_PATH = BASE_PATH + "BE_mobile_phone_proximus//mob/grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH + "BE_mobile_phone_proximus/heatmap_final_ETRS989.shp";
+	public static String BUILDINGS_SHP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/buildings_wal_lux.shp";
 
 	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
 	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_proximus_grid.csv";
+	public static String stats_grid_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/stats_grid_building_intersection.csv";
+	public static String voronoi_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/voronoi_building_intersection.csv";
 
 
 
@@ -83,16 +86,6 @@ public class Main {
 	}
 
 
-
-	public static void getBuildingStatByGridCell() {
-		//intersection between geostat grid and building layer
-
-		//go through grid cells
-		//get all buildings intersecting the grid (with spatial index)
-		//compute stat on buildings: total area/volume, number, building size distribution
-		//compute also building density from pop data. Asumption: should be +/- constant.
-		//export as csv file
-	}
 
 
 
@@ -185,8 +178,8 @@ public class Main {
 
 		//validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
 
-		//getBuildingStatByGridCell();
-		//getPopulationGridFromMobilePhoneData();
+		//StatisticalUnitIntersectionWithGeoLayer.compute(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, stats_grid_building_intersection);
+		//StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
 
 		System.out.println("End");
 	}
