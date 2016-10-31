@@ -8,24 +8,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
 import org.geotools.data.shapefile.shp.ShapefileException;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.feature.FeatureIterator;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 import eu.ec.estat.java4eurostat.base.StatsHypercube;
 import eu.ec.estat.java4eurostat.base.StatsIndex;
@@ -46,102 +31,6 @@ public class Main {
 
 	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
 	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_proximus_grid.csv";
-
-
-
-
-	/**
-	 * @param name1 name of the first dataset (for labelling)
-	 * @param shp1 path of the first dataset
-	 * @param idField1 name of the first dataset id attribute
-	 * @param name2
-	 * @param shp2
-	 * @param idField2
-	 * @param out
-	 * @throws ShapefileException
-	 * @throws MalformedURLException
-	 * @throws IOException
-	 */
-	public static void computeStatUnitDatasetsIntersectionMatrix(String name1, String shp1, String idField1, String name2, String shp2, String idField2, String out) throws ShapefileException, MalformedURLException, IOException{
-
-		//create out file
-		File outFile = new File(out);
-		if(outFile.exists()) outFile.delete();
-		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
-
-		//write header
-		bw.write(name1+","+name2+","+name2+"_to_"+name1+","+name1+"_to_"+name2);
-		bw.newLine();
-
-		//load feature collections
-		System.out.print("Loading...");
-		Collection<SimpleFeature> fc1 = getFeatureCollectionF(shp1);
-		Collection<SimpleFeature> fc2 = getFeatureCollectionF(shp2);
-		System.out.println(" Done.");
-
-		for(SimpleFeature f1 : fc1) {
-			Geometry geom1 = (Geometry) f1.getDefaultGeometryProperty().getValue();
-			double a1 = geom1.getArea();
-			String id1 = f1.getAttribute(idField1).toString();
-			System.out.println(id1);
-
-			for(SimpleFeature f2 : fc2) {
-				//get input feature 2 data
-				Geometry geom2 = (Geometry) f2.getDefaultGeometryProperty().getValue();
-
-				//check intersection
-				if(!geom1.intersects(geom2)) continue;
-				double interArea = geom1.intersection(geom2).getArea();
-				if(interArea == 0) continue;
-
-				//compute area ratios
-				double ratio2 = interArea/a1, ratio1 = interArea/geom2.getArea();
-
-				//store relation data
-				bw.write(id1+","+f2.getAttribute(idField2).toString()+","+ratio1+","+ratio2);
-				bw.newLine();
-			}
-		}
-		bw.close();
-
-	}
-
-
-
-
-	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Geometry intersects, String geometryAttribute){
-		//ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
-		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
-		Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(intersects));
-		return getFeatureCollection(shpFilePath, filter);
-	}
-	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath){ return getFeatureCollection(shpFilePath, Filter.INCLUDE); }
-	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Filter filter){
-		try {
-			File file = new File(shpFilePath);
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("url", file.toURI().toURL());
-
-			DataStore dataStore = DataStoreFinder.getDataStore(map);
-			String typeName = dataStore.getTypeNames()[0];
-			FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
-			dataStore.dispose();
-			return (SimpleFeatureCollection) source.getFeatures(filter);
-		} catch (MalformedURLException e) { e.printStackTrace();
-		} catch (IOException e) { e.printStackTrace(); }
-		return null;
-	}
-
-	public static Collection<SimpleFeature> getFeatureCollectionF(String shpFilePath){ return getFeatureCollectionF(shpFilePath, Filter.INCLUDE); }
-	public static Collection<SimpleFeature> getFeatureCollectionF(String shpFilePath, Filter filter){
-		Collection<SimpleFeature> col = new HashSet<SimpleFeature>();
-		FeatureIterator<SimpleFeature> it = getFeatureCollection(shpFilePath, filter).features();
-		while (it.hasNext()) col.add(it.next());
-		it.close();
-		return col;
-	}
-
-
 
 
 
@@ -291,8 +180,8 @@ public class Main {
 
 		//computeGridAttribute(GEOSTAT_GRID_PATH);
 
-		//computeStatUnitDatasetsIntersectionMatrix("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
-		//computeStatUnitDatasetsIntersectionMatrix("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
+		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
+		//StatisticalUnitsIntersectionMatrix.compute("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
 		//validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
 
