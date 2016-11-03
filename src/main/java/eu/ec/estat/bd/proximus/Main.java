@@ -26,12 +26,14 @@ public class Main {
 	public static String ESTAT_POP_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
 	public static String GEOSTAT_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/grid_pop_2011.csv";
 	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/nuts3.shp";
+	public static String MUNICIPALITIES_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/municipalities.shp";
 	public static String GEOSTAT_GRID_PATH = BASE_PATH + "BE_mobile_phone_proximus//mob/grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH + "BE_mobile_phone_proximus/heatmap_final_ETRS989.shp";
 	public static String BUILDINGS_SHP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/buildings_wal_lux.shp";
 
 	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
 	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_proximus_grid.csv";
+	public static String matrix_municipalities_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_municipalities_grid.csv";
 	public static String stats_grid_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/stats_grid_building_intersection.csv";
 	public static String voronoi_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/voronoi_building_intersection.csv";
 
@@ -39,7 +41,7 @@ public class Main {
 
 	//compute Eurostat population dataset from geostat grid and compare with published one
 	//TODO: get pop data at LAU level from fabio
-	public static void validateEurostatGeostat(String out) throws ShapefileException, MalformedURLException, IOException{
+	public static void validateEurostatGeostat() throws ShapefileException, MalformedURLException, IOException{
 		//test consistency between estat NUTS3/LAU data and geostat grid
 
 		//load estat population data
@@ -52,7 +54,7 @@ public class Main {
 		//matrixI.print();
 
 		//create out file
-		File outFile = new File(out);
+		File outFile = new File(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_municipalities_geostat.csv");
 		if(outFile.exists()) outFile.delete();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
 		//write header
@@ -173,10 +175,11 @@ public class Main {
 
 		//computeGridAttribute(GEOSTAT_GRID_PATH);
 
+		StatisticalUnitsIntersectionMatrix.compute("municipalities", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
-		//validateEurostatGeostat(BASE_PATH+"BE_mobile_phone_proximus/mob/validation_nuts_geostat.csv");
+		validateEurostatGeostat();
 
 		//StatisticalUnitIntersectionWithGeoLayer.compute(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, stats_grid_building_intersection);
 		//StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
