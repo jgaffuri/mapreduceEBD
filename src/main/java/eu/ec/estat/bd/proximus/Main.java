@@ -40,8 +40,8 @@ public class Main {
 
 
 	//compute Eurostat population dataset from geostat grid and compare with published one
-	//TODO: get pop data at LAU level from fabio
 	public static void validateEurostatGeostat() throws ShapefileException, MalformedURLException, IOException{
+		//TODO
 		//test consistency between estat NUTS3/LAU data and geostat grid
 
 		//load estat population data
@@ -175,7 +175,7 @@ public class Main {
 
 		//computeGridAttribute(GEOSTAT_GRID_PATH);
 
-		StatisticalUnitsIntersectionMatrix.compute("municipalities", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
+		//StatisticalUnitsIntersectionMatrix.compute("municipalities", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
