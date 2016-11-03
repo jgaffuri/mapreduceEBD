@@ -23,7 +23,8 @@ import eu.ec.estat.java4eurostat.io.DicUtil;
  */
 public class Main {
 	public static String BASE_PATH = "H:/geodata/";
-	public static String ESTAT_POP_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
+	public static String ESTAT_POP_NUTS_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
+	public static String ESTAT_POP_MUNICIPALITIES_PATH = null;
 	public static String GEOSTAT_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/grid_pop_2011.csv";
 	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/nuts3.shp";
 	public static String MUNICIPALITIES_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/municipalities.shp";
@@ -41,16 +42,15 @@ public class Main {
 
 	//compute Eurostat population dataset from geostat grid and compare with published one
 	public static void validateEurostatGeostat() throws ShapefileException, MalformedURLException, IOException{
-		//TODO
-		//test consistency between estat NUTS3/LAU data and geostat grid
+		//test consistency between estat estat dataset (NUTS3/LAU) and geostat grid
 
 		//load estat population data
-		HashMap<String, String> estatPop = DicUtil.load(ESTAT_POP_PATH, ",");
+		HashMap<String, String> estatPop = DicUtil.load(ESTAT_POP_MUNICIPALITIES_PATH, ",");
 		//load grid cells data
 		HashMap<String, String> geostatPop = DicUtil.load(GEOSTAT_POP_PATH, ",");
 		//load intersection matrix
-		StatsHypercube matrix = CSV.load(matrix_nuts_grid, "grid_to_nuts"); matrix.delete("nuts_to_grid");
-		StatsIndex matrixI = new StatsIndex(matrix, "nuts", "grid"); matrix = null;
+		StatsHypercube matrix = CSV.load(matrix_municipalities_grid, "grid_to_municipality"); matrix.delete("municipality_to_grid");
+		StatsIndex matrixI = new StatsIndex(matrix, "municipality", "grid"); matrix = null;
 		//matrixI.print();
 
 		//create out file
@@ -58,13 +58,13 @@ public class Main {
 		if(outFile.exists()) outFile.delete();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
 		//write header
-		bw.write("nuts,EBpop,fromGridPop,diff,error");
+		bw.write("municipality,EBpop,fromGridPop,diff,error");
 		bw.newLine();
 
-		//go through list of estat SU
-		for(String nutsId : matrixI.getKeys()){
+		//go through list of Eurostat statistical units
+		for(String statUnitId : matrixI.getKeys()){
 			//get list of cells from matrix
-			StatsIndex cells = matrixI.getSubIndex(nutsId);
+			StatsIndex cells = matrixI.getSubIndex(statUnitId);
 
 			//compute population from cell population using matrix data
 			double pop = 0;
@@ -76,12 +76,12 @@ public class Main {
 				pop += cellPop*weight;
 			}
 
-			int ebPop = Integer.parseInt(estatPop.get(nutsId));
+			int ebPop = Integer.parseInt(estatPop.get(statUnitId));
 			double diff = ebPop - pop;
 			double err = diff/ebPop;
 
 			//save as csv: id-population-populationComputed-difference
-			bw.write(nutsId+","+ebPop+","+pop+","+diff+","+err);
+			bw.write(statUnitId+","+ebPop+","+pop+","+diff+","+err);
 			bw.newLine();
 		}
 		bw.close();
@@ -175,14 +175,19 @@ public class Main {
 
 		//computeGridAttribute(GEOSTAT_GRID_PATH);
 
-		//StatisticalUnitsIntersectionMatrix.compute("municipalities", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
+		StatisticalUnitsIntersectionMatrix.compute("municipality", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
-		validateEurostatGeostat();
+		//validateEurostatGeostat();
 
 		//StatisticalUnitIntersectionWithGeoLayer.compute(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, stats_grid_building_intersection);
 		//StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
+
+		//su to buildings: for each cell/statunit, assess the building quantity and, then, density per building. compute building density/pop
+		//do for grid to building and voronoi to building
+		//building to su: for each su, aggregate pop of buildings.
+		//do it for building/grid to grid and building/voronoi to grid
 
 		System.out.println("End");
 	}
