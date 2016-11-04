@@ -35,8 +35,11 @@ public class Main {
 	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
 	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_proximus_grid.csv";
 	public static String matrix_municipalities_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_municipalities_grid.csv";
-	public static String stats_grid_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/stats_grid_building_intersection.csv";
-	public static String voronoi_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/voronoi_building_intersection.csv";
+
+	public static String stats_grid_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/building_intersection_with_grid.csv";
+	public static String buildingPopFromGrid = BASE_PATH+"BE_mobile_phone_proximus/mob/building_pop_from_grid.csv";
+	public static String voronoi_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/building_intersection_with_voronoi.csv";
+	public static String buildingPopFromVoronoi = BASE_PATH+"BE_mobile_phone_proximus/mob/building_pop_from_voronoi.csv";
 
 
 
@@ -179,15 +182,26 @@ public class Main {
 		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
-		validateEurostatGeostat();
+		//validateEurostatGeostat();
 
-		//StatisticalUnitIntersectionWithGeoLayer.compute(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, stats_grid_building_intersection);
-		//StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
+		//assess the building quantity for each grid cell
+		StatisticalUnitIntersectionWithGeoLayer.compute(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, stats_grid_building_intersection);
+		//assess the building quantity for each voronoi cell
+		StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
 
-		//su to buildings: for each cell/statunit, assess the building quantity and, then, density per building. compute building density/pop
-		//do for grid to building and voronoi to building
-		//building to su: for each su, aggregate pop of buildings.
-		//do it for building/grid to grid and building/voronoi to grid
+		//assess the building density based on grid
+		//buildingDensityFromGrid
+		//assess the building density based on voronoi
+		//buildingDensityFromVoronoi
+
+		//compare building densities
+
+		//aggregate building grid/population to grid
+		//compare with initial grid population - should be the same
+
+		//aggregate building voronoi/population to grid
+		//compare with initial grid population
+		//compare with proximus computes grid population
 
 		System.out.println("End");
 	}

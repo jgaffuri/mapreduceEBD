@@ -38,10 +38,10 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 	 * @param statUnitIdField
 	 * @param geoSHPFile
 	 */
-	public static void compute(String statUnitsSHPFile, String statUnitIdField, String geoSHPFile, String outFile) {
+	public static void compute(String statUnitsSHPFile, String statUnitIdField, String geoSHPFile, String statUnitOutFile) {
 		try {
 			//create out file
-			File outFile_ = new File(outFile);
+			File outFile_ = new File(statUnitOutFile);
 			if(outFile_.exists()) outFile_.delete();
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
 
