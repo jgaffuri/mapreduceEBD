@@ -184,17 +184,25 @@ public class Main {
 
 		//validateEurostatGeostat();
 
+		//TODO integrate all building shp into one
 		//assess the building quantity for each grid cell
 		StatisticalUnitIntersectionWithGeoLayer.compute(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, stats_grid_building_intersection);
 		//assess the building quantity for each voronoi cell
 		StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
 
-		//assess the building density based on grid
+		//assess the building density based on grid pop
 		//buildingDensityFromGrid
-		//assess the building density based on voronoi
+		//assess the building density based on voronoi pop
 		//buildingDensityFromVoronoi
 
-		//compare building densities
+		//go through all geo - purpose is to compute geo pop/density
+		//get all SUs intersecting geo (using spatial index)
+		//get pop of all SUs intersecting (popSU) + geo quantity of SU (geoQSU)
+		//geoPop = surf(geo)/geoQSU * popSU (case of single intersection)
+		//geoPop = Sum on SUs interecting of:  surf(geo inter su)/geoQSU * popSU  (general case)
+		//then: geoDensity=geoPop/surf(geo)
+
+		//compare building densities - see discrepencies and enrich model to reduce it (further)
 
 		//aggregate building grid/population to grid
 		//compare with initial grid population - should be the same
