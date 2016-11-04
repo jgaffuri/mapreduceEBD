@@ -14,6 +14,7 @@ import java.util.Map;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureIterator;
@@ -131,6 +132,8 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			FeatureSource<SimpleFeatureType, SimpleFeature> sourceGeo = dataStoreGeo.getFeatureSource(dataStoreGeo.getTypeNames()[0]);
 			dataStoreGeo.dispose();
 
+			int nbGeo = sourceGeo.getCount(new Query( sourceGeo.getSchema().getTypeName(), Filter.INCLUDE ));
+
 			//open statistical units dataset
 			//TODO factor
 			Map<String, Object> mapStat = new HashMap<String, Object>(); mapStat.put("url", new File(statUnitsSHPFile).toURI().toURL());
@@ -147,10 +150,11 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 			//go through geo - purpose is to compute geo pop/density
 			FeatureIterator<SimpleFeature> itGeo = ((SimpleFeatureCollection) sourceGeo.getFeatures(Filter.INCLUDE)).features();
+			int geoCounter = 0;
 			while (itGeo.hasNext()) {
 				SimpleFeature geoUnit = itGeo.next();
 				String geoId = geoUnit.getAttribute(geoIdField).toString();
-				System.out.println(geoId);
+				System.out.println(geoId + " " + (geoCounter++) + "/" + nbGeo + " " + ((int)(10000*geoCounter/nbGeo))*0.01 + "%");
 
 				Geometry geoGeom = (Geometry) geoUnit.getDefaultGeometryProperty().getValue();
 

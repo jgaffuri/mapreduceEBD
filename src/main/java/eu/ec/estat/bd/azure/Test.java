@@ -29,8 +29,8 @@ public class Test {
 			// Retrieve storage account, blob client and container
 			CloudStorageAccount storageAccount = CloudStorageAccount.parse(Config.azureStorageConnectionString);
 			CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
-			//CloudBlobContainer container = blobClient.getContainerReference("containerfromjava");
-			CloudBlobContainer container = blobClient.getContainerReference("estatbdcluster-1");
+			CloudBlobContainer container = blobClient.getContainerReference("containerfromjava");
+			//CloudBlobContainer container = blobClient.getContainerReference("estatbdcluster-1");
 			//CloudBlobContainer container = blobClient.getContainerReference("testblob");
 
 			// Create the container if it does not exist.

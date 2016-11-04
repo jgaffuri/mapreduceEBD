@@ -46,8 +46,8 @@ public class StatisticalUnitsIntersectionMatrix {
 
 		//load feature collections
 		System.out.print("Loading...");
-		Collection<SimpleFeature> fc1 = FeatureUtil.getFeatureCollectionF(shpFile1);
-		Collection<SimpleFeature> fc2 = FeatureUtil.getFeatureCollectionF(shpFile2);
+		Collection<SimpleFeature> fc1 = ShapeFile.getFeatureCollectionF(shpFile1);
+		Collection<SimpleFeature> fc2 = ShapeFile.getFeatureCollectionF(shpFile2);
 		System.out.println(" Done.");
 
 		for(SimpleFeature f1 : fc1) {

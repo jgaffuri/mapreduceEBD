@@ -14,6 +14,7 @@ import java.util.Map;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureIterator;
@@ -25,12 +26,45 @@ import org.opengis.filter.FilterFactory2;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Various function on geotools features.
+ * Various functions to manipulate shapefiles
  * 
  * @author julien Gaffuri
  *
  */
-public class FeatureUtil {
+public class ShapeFile {
+	//TODO
+	private String path;
+	private DataStore dataStore;
+	private FeatureSource<SimpleFeatureType, SimpleFeature> featureSource;
+
+	public ShapeFile(String path){
+		this.path = path;
+	}
+
+	public ShapeFile open(){
+		try {
+			Map<String, Object> mapStat = new HashMap<String, Object>(); mapStat.put("url", new File(this.path).toURI().toURL());
+			dataStore = DataStoreFinder.getDataStore(mapStat);
+			featureSource = dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
+		} catch (Exception e) { e.printStackTrace(); }
+		return this;
+	}
+	public ShapeFile dispose(){
+		dataStore.dispose();
+		return this;
+	}
+
+	public int count(){ return count(Filter.INCLUDE); }
+	public int count(Filter filter){
+		try {
+			return featureSource.getCount(new Query( featureSource.getSchema().getTypeName(), filter ));
+		} catch (IOException e) { e.printStackTrace(); }
+		return 0;
+	}
+
+	//TODO
+
+
 
 	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Geometry geomIntersects, String geometryAttribute){
 		//ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
