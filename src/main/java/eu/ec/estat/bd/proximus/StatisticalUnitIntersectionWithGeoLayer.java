@@ -46,7 +46,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
 
 			//write header
-			bw.write("id,number,area,length");
+			bw.write("id,number,area,length,area_density,length_density");
 			bw.newLine();
 
 			//open statistical units dataset
@@ -96,7 +96,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				if(nbGeo == 0) continue;
 
 				//store
-				String line = statUnitId+","+nbGeo+","+totalArea+","+totalLength;
+				String line = statUnitId+","+nbGeo+","+totalArea+","+totalLength+","+totalArea/StatUnitGeom.getArea()+","+totalLength/StatUnitGeom.getArea();
 				System.out.println(line);
 				bw.write(line);
 				bw.newLine();
