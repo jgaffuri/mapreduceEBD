@@ -192,7 +192,7 @@ public class Main {
 		//assess the building density based on grid pop
 		StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, buildingDensityFromGrid);
 		//assess the building density based on voronoi pop
-		//StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(buildingDensityFromVoronoi);
+		//StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(buildingDensityFromVoronoi); //TODO extract csv with voronoi population
 
 		//compare building densities - see discrepencies and possibly enrich model to reduce it (further)
 

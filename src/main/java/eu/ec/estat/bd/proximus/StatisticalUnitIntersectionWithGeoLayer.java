@@ -24,6 +24,11 @@ import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import eu.ec.estat.java4eurostat.base.StatsHypercube;
+import eu.ec.estat.java4eurostat.base.StatsIndex;
+import eu.ec.estat.java4eurostat.io.CSV;
+import eu.ec.estat.java4eurostat.io.DicUtil;
+
 /**
  * @author julien Gaffuri
  *
@@ -133,6 +138,15 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			//dataStoreStat.dispose();
 			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
+			//load stat unit population data
+			HashMap<String, String> statUnitPopulation = DicUtil.load(statUnitsPopFilePath, ",");
+
+			//TODO
+			//get geo quantity of SU
+			//Map<String, Double> statUnitGeoPopulation;
+			//StatsHypercube matrix = CSV.load(matrix_municipalities_grid, "grid_to_municipality"); matrix.delete("municipality_to_grid");
+			//StatsIndex matrixI = new StatsIndex(matrix, "municipality", "grid"); matrix = null;
+
 			//go through geo - purpose is to compute geo pop/density
 			FeatureIterator<SimpleFeature> itGeo = ((SimpleFeatureCollection) sourceGeo.getFeatures(Filter.INCLUDE)).features();
 			while (itGeo.hasNext()) {
@@ -140,35 +154,33 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				String geoId = geoUnit.getAttribute(geoIdField).toString();
 				System.out.println(geoId);
 
-				//get all stat units intersecting the geo (with spatial index)
 				Geometry geoGeom = (Geometry) geoUnit.getDefaultGeometryProperty().getValue();
+				double geoSurf = geoGeom.getArea();
+
+				//get all stat units intersecting the geo (with spatial index)
 				//Filter filter = ff.intersects(ff.property("the_geom"), ff.literal(StatUnitGeom));
 				Filter filter = ff.bbox(ff.property("the_geom"), geoUnit.getBounds());
 				FeatureIterator<SimpleFeature> itStat = ((SimpleFeatureCollection) sourceStat.getFeatures(filter)).features();
 
-				//TODO 1
-				//get pop of all SUs intersecting (popSU) + geo quantity of SU (geoQSU)
-
 				int nbStat = 0;
 				double geoPop = 0;
+				//geoPop = Sum on SUs interecting of:  surf(geo inter su)/statUnitGeoPopulation * statUnitPopulation
 				while (itStat.hasNext()) {
 					SimpleFeature stat = itStat.next();
+					String statId = stat.getAttribute(statUnitsIdField).toString();
 
 					Geometry StatUnitGeom = (Geometry) stat.getDefaultGeometryProperty().getValue();
 					if(!geoGeom.intersects(StatUnitGeom)) continue;
-					Geometry inter = geoGeom.intersection(StatUnitGeom);
-
 					nbStat++;
-					//TODO 2
-					//geoPop = surf(geo)/geoQSU * popSU (case of single intersection)
-					//geoPop = Sum on SUs interecting of:  surf(geo inter su)/geoQSU * popSU  (general case)
+
+					geoPop += geoGeom.intersection(StatUnitGeom).getArea() / statUnitGeoPopulation.get(statId) * statUnitPopulation.get(statId);
 				}
 				itStat.close();
 
 				if(nbStat == 0) continue;
 
 				//store
-				String line = geoId+","+geoPop+","+geoPop/geoGeom.getArea()+","+nbStat;
+				String line = geoId+","+geoPop+","+geoPop/geoSurf+","+nbStat;
 				System.out.println(line);
 				bw.write(line);
 				bw.newLine();
