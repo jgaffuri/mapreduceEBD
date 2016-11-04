@@ -24,7 +24,7 @@ import eu.ec.estat.java4eurostat.io.DicUtil;
 public class Main {
 	public static String BASE_PATH = "H:/geodata/";
 	public static String ESTAT_POP_NUTS_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
-	public static String ESTAT_POP_MUNICIPALITIES_PATH = null;
+	public static String ESTAT_POP_MUNICIPALITIES_PATH = BASE_PATH + "census_hub/population_be_2011_municipalities.csv";
 	public static String GEOSTAT_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/grid_pop_2011.csv";
 	public static String NUTS_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/nuts3.shp";
 	public static String MUNICIPALITIES_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/municipalities.shp";
@@ -58,7 +58,7 @@ public class Main {
 		if(outFile.exists()) outFile.delete();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile, true));
 		//write header
-		bw.write("municipality,EBpop,fromGridPop,diff,error");
+		bw.write("municipality,EBpop,fromGridPop,diff,error,error_abs");
 		bw.newLine();
 
 		//go through list of Eurostat statistical units
@@ -81,7 +81,7 @@ public class Main {
 			double err = diff/ebPop;
 
 			//save as csv: id-population-populationComputed-difference
-			bw.write(statUnitId+","+ebPop+","+pop+","+diff+","+err);
+			bw.write(statUnitId+","+ebPop+","+pop+","+diff+","+err+","+Math.abs(err));
 			bw.newLine();
 		}
 		bw.close();
@@ -175,11 +175,11 @@ public class Main {
 
 		//computeGridAttribute(GEOSTAT_GRID_PATH);
 
-		StatisticalUnitsIntersectionMatrix.compute("municipality", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
+		//StatisticalUnitsIntersectionMatrix.compute("municipality", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
 
-		//validateEurostatGeostat();
+		validateEurostatGeostat();
 
 		//StatisticalUnitIntersectionWithGeoLayer.compute(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, stats_grid_building_intersection);
 		//StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
