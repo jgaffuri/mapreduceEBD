@@ -30,6 +30,7 @@ public class Main {
 	public static String MUNICIPALITIES_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/municipalities.shp";
 	public static String GEOSTAT_GRID_PATH = BASE_PATH + "BE_mobile_phone_proximus//mob/grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH + "BE_mobile_phone_proximus/heatmap_final_ETRS989.shp";
+	public static String PROXIMUS_VORONOI_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/voronoi_population.csv";
 	public static String BUILDINGS_SHP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/buildings_wal_lux.shp"; //TODO integrate all building shp into one
 
 	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
@@ -190,9 +191,9 @@ public class Main {
 		//StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
 
 		//assess the building density based on grid pop
-		StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, buildingDensityFromGrid);
+		StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, stats_grid_building_intersection, buildingDensityFromGrid);
 		//assess the building density based on voronoi pop
-		//StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(buildingDensityFromVoronoi); //TODO extract csv with voronoi population
+		StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", GEOSTAT_POP_PATH, voronoi_building_intersection, buildingDensityFromVoronoi);
 
 		//compare building densities - see discrepencies and possibly enrich model to reduce it (further)
 

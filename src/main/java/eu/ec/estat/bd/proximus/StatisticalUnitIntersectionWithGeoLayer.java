@@ -24,9 +24,6 @@ import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.ec.estat.java4eurostat.base.StatsHypercube;
-import eu.ec.estat.java4eurostat.base.StatsIndex;
-import eu.ec.estat.java4eurostat.io.CSV;
 import eu.ec.estat.java4eurostat.io.DicUtil;
 
 /**
@@ -51,7 +48,8 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
 
 			//write header
-			bw.write("id,number,area,length"/*+",area_density,length_density"*/);
+			bw.write("id,area");
+			//bw.write("id,number,area,length"/*+",area_density,length_density"*/);
 			bw.newLine();
 
 			//open statistical units dataset
@@ -81,7 +79,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				FeatureIterator<SimpleFeature> itGeo = ((SimpleFeatureCollection) sourceGeo.getFeatures(filter)).features();
 
 				//compute stat on geo: total area/volume, number, building size distribution
-				int nbGeo=0; double totalArea=0, totalLength=0;
+				int nbGeo=0; double totalArea=0 /*, totalLength=0*/;
 				while (itGeo.hasNext()) {
 					SimpleFeature geo = itGeo.next();
 
@@ -94,14 +92,15 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 					nbGeo++;
 					totalArea += inter.getArea();
-					totalLength += inter.getLength();
+					//totalLength += inter.getLength();
 				}
 				itGeo.close();
 
 				if(nbGeo == 0) continue;
 
 				//store
-				String line = statUnitId+","+nbGeo+","+totalArea+","+totalLength/*+","+totalArea/StatUnitGeom.getArea()+","+totalLength/StatUnitGeom.getArea()*/;
+				String line = statUnitId+","+totalArea;
+				//String line = statUnitId+","+nbGeo+","+totalArea+","+totalLength/*+","+totalArea/StatUnitGeom.getArea()+","+totalLength/StatUnitGeom.getArea()*/;
 				System.out.println(line);
 				bw.write(line);
 				bw.newLine();
@@ -113,7 +112,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 		} catch (IOException e) { e.printStackTrace(); }
 	}
 
-	public static void computeGeoDensity(String geoSHPFile, String geoIdField, String statUnitsSHPFile, String statUnitsIdField, String statUnitsPopFilePath, String geoOutFile) {
+	public static void computeGeoDensity(String geoSHPFile, String geoIdField, String statUnitsSHPFile, String statUnitsIdField, String statUnitValuesPath, String statUnitGeoTotalAreaPath, String geoOutFile) {
 		try {
 
 			//create out file
@@ -126,12 +125,14 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			bw.newLine();
 
 			//open geo dataset
+			//TODO factor
 			Map<String, Object> mapGeo = new HashMap<String, Object>(); mapGeo.put("url", new File(geoSHPFile).toURI().toURL());
 			DataStore dataStoreGeo = DataStoreFinder.getDataStore(mapGeo);
 			FeatureSource<SimpleFeatureType, SimpleFeature> sourceGeo = dataStoreGeo.getFeatureSource(dataStoreGeo.getTypeNames()[0]);
 			dataStoreGeo.dispose();
 
 			//open statistical units dataset
+			//TODO factor
 			Map<String, Object> mapStat = new HashMap<String, Object>(); mapStat.put("url", new File(statUnitsSHPFile).toURI().toURL());
 			DataStore dataStoreStat = DataStoreFinder.getDataStore(mapStat);
 			FeatureSource<SimpleFeatureType, SimpleFeature> sourceStat = dataStoreStat.getFeatureSource(dataStoreStat.getTypeNames()[0]);
@@ -139,13 +140,10 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
 			//load stat unit population data
-			HashMap<String, String> statUnitPopulation = DicUtil.load(statUnitsPopFilePath, ",");
+			HashMap<String, String> statUnitValue = DicUtil.load(statUnitValuesPath, ",");
 
-			//TODO
-			//get geo quantity of SU
-			//Map<String, Double> statUnitGeoPopulation;
-			//StatsHypercube matrix = CSV.load(matrix_municipalities_grid, "grid_to_municipality"); matrix.delete("municipality_to_grid");
-			//StatsIndex matrixI = new StatsIndex(matrix, "municipality", "grid"); matrix = null;
+			//get geo total area by SU
+			HashMap<String, String> statUnitGeoTotalArea = DicUtil.load(statUnitGeoTotalAreaPath, ",");
 
 			//go through geo - purpose is to compute geo pop/density
 			FeatureIterator<SimpleFeature> itGeo = ((SimpleFeatureCollection) sourceGeo.getFeatures(Filter.INCLUDE)).features();
@@ -155,7 +153,6 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				System.out.println(geoId);
 
 				Geometry geoGeom = (Geometry) geoUnit.getDefaultGeometryProperty().getValue();
-				double geoSurf = geoGeom.getArea();
 
 				//get all stat units intersecting the geo (with spatial index)
 				//Filter filter = ff.intersects(ff.property("the_geom"), ff.literal(StatUnitGeom));
@@ -163,24 +160,33 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				FeatureIterator<SimpleFeature> itStat = ((SimpleFeatureCollection) sourceStat.getFeatures(filter)).features();
 
 				int nbStat = 0;
-				double geoPop = 0;
-				//geoPop = Sum on SUs interecting of:  surf(geo inter su)/statUnitGeoPopulation * statUnitPopulation
+				double geoStatValue = 0;
+				//geoStatValue = Sum on SUs interecting of:  surf(geo inter su)/statUnitGeoTotalArea * statUnitValue
 				while (itStat.hasNext()) {
 					SimpleFeature stat = itStat.next();
 					String statId = stat.getAttribute(statUnitsIdField).toString();
 
-					Geometry StatUnitGeom = (Geometry) stat.getDefaultGeometryProperty().getValue();
-					if(!geoGeom.intersects(StatUnitGeom)) continue;
-					nbStat++;
+					//get stat unit geometry
+					Geometry statUnitGeom = (Geometry) stat.getDefaultGeometryProperty().getValue();
+					if(!geoGeom.intersects(statUnitGeom)) continue;
 
-					geoPop += geoGeom.intersection(StatUnitGeom).getArea() / statUnitGeoPopulation.get(statId) * statUnitPopulation.get(statId);
+					//get stat unit value
+					String statValue = statUnitValue.get(statId);
+					if(statValue == null || Double.parseDouble(statValue) == 0) continue;
+
+					//get stat unit geo total area
+					String statGeoTot = statUnitGeoTotalArea.get(statId);
+					if(statGeoTot == null || Double.parseDouble(statGeoTot) == 0) continue;
+
+					nbStat++;
+					geoStatValue += geoGeom.intersection(statUnitGeom).getArea() / Double.parseDouble(statGeoTot) * Double.parseDouble(statValue);
 				}
 				itStat.close();
 
 				if(nbStat == 0) continue;
 
 				//store
-				String line = geoId+","+geoPop+","+geoPop/geoSurf+","+nbStat;
+				String line = geoId+","+geoStatValue+","+geoStatValue/geoGeom.getArea()+","+nbStat;
 				System.out.println(line);
 				bw.write(line);
 				bw.newLine();
