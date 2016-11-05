@@ -5,15 +5,19 @@ package eu.ec.eurostat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
+import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureIterator;
@@ -36,6 +40,11 @@ public class ShapeFile {
 	private DataStore dataStore;
 	private FeatureSource<SimpleFeatureType, SimpleFeature> featureSource;
 
+	/**
+	 * A shapefile
+	 * 
+	 * @param path
+	 */
 	public ShapeFile(String path){
 		try {
 			this.path = path;
@@ -44,10 +53,18 @@ public class ShapeFile {
 			featureSource = dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
 		} catch (Exception e) { e.printStackTrace(); }
 	}
+
+	/**
+	 * Dispose the datastore.
+	 * 
+	 * @return
+	 */
 	public ShapeFile dispose(){
 		dataStore.dispose();
 		return this;
 	}
+
+	public SimpleFeatureType getFeatureType() { return featureSource.getSchema(); }
 
 	public FeatureIterator<SimpleFeature> getFeatures() { return getFeatures(Filter.INCLUDE); }
 	public FeatureIterator<SimpleFeature> getFeatures(BoundingBox intersectionBB, String geometryAttribute, FilterFactory2 ff) {
@@ -92,8 +109,20 @@ public class ShapeFile {
 		return col;
 	}
 
-	public static ShapeFile union(ShapeFile... shapefiles){
-		//TODO
+	public static ShapeFile union(String outPath, ShapeFile... shapefiles){ return union(outPath, Filter.INCLUDE, shapefiles); }
+	public static ShapeFile union(String outPath, Filter filter, ShapeFile... shapefiles){
+		try {
+			if(shapefiles.length == 0) return null; //TODO create empty shapefile?
+
+			File file = new File(outPath);
+			if(file.exists()) file.delete();
+
+			DataStore dataStore = new ShapefileDataStoreFactory().createNewDataStore(Collections.singletonMap( "url", (Serializable) file.toURI().toURL() ));
+			dataStore.createSchema(shapefiles[0].getFeatureType());
+
+			//TODO
+			
+		} catch (Exception e) { e.printStackTrace(); }
 		return null;
 	}
 
