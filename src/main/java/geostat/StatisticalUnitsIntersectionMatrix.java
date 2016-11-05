@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.proximus;
+package geostat;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,6 +11,8 @@ import org.geotools.data.shapefile.shp.ShapefileException;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
+
+import eu.ec.estat.bd.ShapeFile;
 
 /**
  * @author julien Gaffuri

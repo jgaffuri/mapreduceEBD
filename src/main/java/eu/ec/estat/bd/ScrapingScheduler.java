@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd.scraping;
+package eu.ec.estat.bd;
 
 import java.io.File;
 import java.io.IOException;
