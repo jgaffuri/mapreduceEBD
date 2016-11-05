@@ -1,7 +1,7 @@
 /**
  * 
  */
-package geostat;
+package eu.ec.eurostat.geostat;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,8 +17,8 @@ import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.ec.estat.bd.ShapeFile;
 import eu.ec.estat.java4eurostat.io.DicUtil;
+import eu.ec.eurostat.ShapeFile;
 
 /**
  * @author julien Gaffuri

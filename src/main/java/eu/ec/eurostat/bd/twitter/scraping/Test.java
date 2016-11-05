@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd.twitter.scraping;
+package eu.ec.eurostat.bd.twitter.scraping;
 
 /**
  * @author julien Gaffuri

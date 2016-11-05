@@ -1,4 +1,4 @@
-package geostat;
+package eu.ec.eurostat.geostat;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,7 +12,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.ec.estat.bd.ShapeFile;
+import eu.ec.eurostat.ShapeFile;
 
 /**
  * @author julien Gaffuri

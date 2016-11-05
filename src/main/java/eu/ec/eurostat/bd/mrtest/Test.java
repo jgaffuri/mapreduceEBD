@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.mrtest;
+package eu.ec.eurostat.bd.mrtest;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;

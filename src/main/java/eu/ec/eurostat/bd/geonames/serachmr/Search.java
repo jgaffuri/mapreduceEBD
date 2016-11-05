@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.geonames.serachmr;
+package eu.ec.eurostat.bd.geonames.serachmr;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;

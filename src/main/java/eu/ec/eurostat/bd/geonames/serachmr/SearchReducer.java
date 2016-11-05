@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.geonames.serachmr;
+package eu.ec.eurostat.bd.geonames.serachmr;
 
 import java.io.IOException;
 import java.util.ArrayList;

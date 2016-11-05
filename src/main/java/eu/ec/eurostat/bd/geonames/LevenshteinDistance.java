@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.geonames;
+package eu.ec.eurostat.bd.geonames;
 
 /**
  * @author Julien Gaffuri

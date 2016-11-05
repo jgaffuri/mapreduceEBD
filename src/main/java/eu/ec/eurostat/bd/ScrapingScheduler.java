@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd;
+package eu.ec.eurostat.bd;
 
 import java.io.File;
 import java.io.IOException;

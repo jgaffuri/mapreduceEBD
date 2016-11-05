@@ -1,14 +1,14 @@
 /**
  * 
  */
-package eu.ec.estat.bd.azure;
+package eu.ec.eurostat.bd.azure;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 
-import eu.ec.estat.bd.Config;
+import eu.ec.eurostat.bd.Config;
 
 /**
  * @author julien Gaffuri

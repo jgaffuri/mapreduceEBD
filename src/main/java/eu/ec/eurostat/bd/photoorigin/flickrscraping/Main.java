@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd.photoorigin.flickrscraping;
+package eu.ec.eurostat.bd.photoorigin.flickrscraping;
 
 import java.io.FileNotFoundException;
 import java.util.Collection;

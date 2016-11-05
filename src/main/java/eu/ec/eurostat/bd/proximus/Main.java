@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd.proximus;
+package eu.ec.eurostat.bd.proximus;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,7 +16,7 @@ import eu.ec.estat.java4eurostat.base.StatsHypercube;
 import eu.ec.estat.java4eurostat.base.StatsIndex;
 import eu.ec.estat.java4eurostat.io.CSV;
 import eu.ec.estat.java4eurostat.io.DicUtil;
-import geostat.StatisticalUnitIntersectionWithGeoLayer;
+import eu.ec.eurostat.geostat.StatisticalUnitIntersectionWithGeoLayer;
 
 /**
  * @author julien Gaffuri

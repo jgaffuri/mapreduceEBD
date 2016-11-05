@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd.photoorigin.flickrscraping;
+package eu.ec.eurostat.bd.photoorigin.flickrscraping;
 
 import java.io.PrintStream;
 import java.util.ArrayList;

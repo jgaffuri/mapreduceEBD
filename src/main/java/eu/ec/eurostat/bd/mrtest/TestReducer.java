@@ -1,4 +1,4 @@
-package eu.ec.estat.bd.mrtest;
+package eu.ec.eurostat.bd.mrtest;
 
 import java.io.IOException;
 

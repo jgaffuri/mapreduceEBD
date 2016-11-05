@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.ec.estat.bd.geonames;
+package eu.ec.eurostat.bd.geonames;
 
 import java.util.ArrayList;
 
