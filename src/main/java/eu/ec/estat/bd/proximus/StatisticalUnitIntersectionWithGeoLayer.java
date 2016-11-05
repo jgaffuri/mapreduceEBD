@@ -9,18 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
-import java.util.Map;
 
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
-import org.geotools.data.Query;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -53,21 +45,13 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			//bw.write("id,number,area,length"/*+",area_density,length_density"*/);
 			bw.newLine();
 
-			//open statistical units dataset
-			Map<String, Object> mapStat = new HashMap<String, Object>(); mapStat.put("url", new File(statUnitsSHPFile).toURI().toURL());
-			DataStore dataStoreStat = DataStoreFinder.getDataStore(mapStat);
-			FeatureSource<SimpleFeatureType, SimpleFeature> sourceStat = dataStoreStat.getFeatureSource(dataStoreStat.getTypeNames()[0]);
-			dataStoreStat.dispose();
-
-			//open geo dataset
-			Map<String, Object> mapGeo = new HashMap<String, Object>(); mapGeo.put("url", new File(geoSHPFile).toURI().toURL());
-			DataStore dataStoreGeo = DataStoreFinder.getDataStore(mapGeo);
-			FeatureSource<SimpleFeatureType, SimpleFeature> sourceGeo = dataStoreGeo.getFeatureSource(dataStoreGeo.getTypeNames()[0]);
-			//dataStoreGeo.dispose();
+			//open statistical units and geo shapefiles
+			ShapeFile statShp = new ShapeFile(statUnitsSHPFile).dispose();
+			ShapeFile geoShp = new ShapeFile(statUnitsSHPFile);
 			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
 			//go through statistical units
-			FeatureIterator<SimpleFeature> itStat = ((SimpleFeatureCollection) sourceStat.getFeatures(Filter.INCLUDE)).features();
+			FeatureIterator<SimpleFeature> itStat = statShp.getFeatures();
 			while (itStat.hasNext()) {
 				SimpleFeature statUnit = itStat.next();
 				String statUnitId = statUnit.getAttribute(statUnitIdField).toString();
@@ -75,9 +59,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 				//get all geo intersecting the stat unit (with spatial index)
 				Geometry StatUnitGeom = (Geometry) statUnit.getDefaultGeometryProperty().getValue();
-				//Filter filter = ff.intersects(ff.property("the_geom"), ff.literal(StatUnitGeom));
-				Filter filter = ff.bbox(ff.property("the_geom"), statUnit.getBounds());
-				FeatureIterator<SimpleFeature> itGeo = ((SimpleFeatureCollection) sourceGeo.getFeatures(filter)).features();
+				FeatureIterator<SimpleFeature> itGeo = geoShp.getFeatures(statUnit.getBounds(), "the_geom", ff);
 
 				//compute stat on geo: total area/volume, number, building size distribution
 				int nbGeo=0; double totalArea=0 /*, totalLength=0*/;
@@ -125,21 +107,11 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			bw.write("id,population,density,_nbStatUnitIntersecting");
 			bw.newLine();
 
-			//open geo dataset
-			//TODO factor
-			Map<String, Object> mapGeo = new HashMap<String, Object>(); mapGeo.put("url", new File(geoSHPFile).toURI().toURL());
-			DataStore dataStoreGeo = DataStoreFinder.getDataStore(mapGeo);
-			FeatureSource<SimpleFeatureType, SimpleFeature> sourceGeo = dataStoreGeo.getFeatureSource(dataStoreGeo.getTypeNames()[0]);
-			dataStoreGeo.dispose();
 
-			int nbGeo = sourceGeo.getCount(new Query( sourceGeo.getSchema().getTypeName(), Filter.INCLUDE ));
-
-			//open statistical units dataset
-			//TODO factor
-			Map<String, Object> mapStat = new HashMap<String, Object>(); mapStat.put("url", new File(statUnitsSHPFile).toURI().toURL());
-			DataStore dataStoreStat = DataStoreFinder.getDataStore(mapStat);
-			FeatureSource<SimpleFeatureType, SimpleFeature> sourceStat = dataStoreStat.getFeatureSource(dataStoreStat.getTypeNames()[0]);
-			//dataStoreStat.dispose();
+			//open geo and statistical units shapefiles
+			ShapeFile geoShp = new ShapeFile(statUnitsSHPFile).dispose();
+			int nbGeo = geoShp.count();
+			ShapeFile statShp = new ShapeFile(statUnitsSHPFile);
 			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
 			//load stat unit population data
@@ -149,7 +121,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			HashMap<String, String> statUnitGeoTotalArea = DicUtil.load(statUnitGeoTotalAreaPath, ",");
 
 			//go through geo - purpose is to compute geo pop/density
-			FeatureIterator<SimpleFeature> itGeo = ((SimpleFeatureCollection) sourceGeo.getFeatures(Filter.INCLUDE)).features();
+			FeatureIterator<SimpleFeature> itGeo = geoShp.getFeatures();
 			int geoCounter = 0;
 			while (itGeo.hasNext()) {
 				SimpleFeature geoUnit = itGeo.next();
@@ -159,9 +131,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				Geometry geoGeom = (Geometry) geoUnit.getDefaultGeometryProperty().getValue();
 
 				//get all stat units intersecting the geo (with spatial index)
-				//Filter filter = ff.intersects(ff.property("the_geom"), ff.literal(StatUnitGeom));
-				Filter filter = ff.bbox(ff.property("the_geom"), geoUnit.getBounds());
-				FeatureIterator<SimpleFeature> itStat = ((SimpleFeatureCollection) sourceStat.getFeatures(filter)).features();
+				FeatureIterator<SimpleFeature> itStat = statShp.getFeatures(geoUnit.getBounds(), "the_geom", ff);
 
 				int nbStat = 0;
 				double geoStatValue = 0;

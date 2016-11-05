@@ -5,7 +5,6 @@ package eu.ec.estat.bd.proximus;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,36 +21,44 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.geometry.BoundingBox;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Various functions to manipulate shapefiles
+ * Various functions to manipulate shapefiles efficiently
  * 
  * @author julien Gaffuri
  *
  */
 public class ShapeFile {
-	//TODO
 	private String path;
 	private DataStore dataStore;
 	private FeatureSource<SimpleFeatureType, SimpleFeature> featureSource;
 
 	public ShapeFile(String path){
-		this.path = path;
-	}
-
-	public ShapeFile open(){
 		try {
+			this.path = path;
 			Map<String, Object> mapStat = new HashMap<String, Object>(); mapStat.put("url", new File(this.path).toURI().toURL());
 			dataStore = DataStoreFinder.getDataStore(mapStat);
 			featureSource = dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
 		} catch (Exception e) { e.printStackTrace(); }
-		return this;
 	}
 	public ShapeFile dispose(){
 		dataStore.dispose();
 		return this;
+	}
+
+	public FeatureIterator<SimpleFeature> getFeatures() { return getFeatures(Filter.INCLUDE); }
+	public FeatureIterator<SimpleFeature> getFeatures(BoundingBox intersectionBB, String geometryAttribute, FilterFactory2 ff) {
+		//Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(StatUnitGeom));
+		return getFeatures(ff.bbox(ff.property(geometryAttribute), intersectionBB));
+	}
+	public FeatureIterator<SimpleFeature> getFeatures(Filter filter) {
+		try {
+			return ((SimpleFeatureCollection) featureSource.getFeatures(filter)).features();
+		} catch (IOException e) { e.printStackTrace(); }
+		return null;
 	}
 
 	public int count(){ return count(Filter.INCLUDE); }
@@ -59,44 +66,35 @@ public class ShapeFile {
 		try {
 			return featureSource.getCount(new Query( featureSource.getSchema().getTypeName(), filter ));
 		} catch (IOException e) { e.printStackTrace(); }
-		return 0;
+		return -1;
 	}
 
-	//TODO
-
-
-
-	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Geometry geomIntersects, String geometryAttribute){
+	public SimpleFeatureCollection getFeatureCollection(Geometry geomIntersects, String geometryAttribute){
 		//ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 		Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(geomIntersects));
-		return getFeatureCollection(shpFilePath, filter);
+		return getFeatureCollection(filter);
 	}
-	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath){ return getFeatureCollection(shpFilePath, Filter.INCLUDE); }
-	public static SimpleFeatureCollection getFeatureCollection(String shpFilePath, Filter filter){
+	public SimpleFeatureCollection getFeatureCollection(){ return getFeatureCollection(Filter.INCLUDE); }
+	public SimpleFeatureCollection getFeatureCollection(Filter filter){
 		try {
-			File file = new File(shpFilePath);
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("url", file.toURI().toURL());
-
-			DataStore dataStore = DataStoreFinder.getDataStore(map);
-			String typeName = dataStore.getTypeNames()[0];
-			FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
-			dataStore.dispose();
-			return (SimpleFeatureCollection) source.getFeatures(filter);
-		} catch (MalformedURLException e) { e.printStackTrace();
-		} catch (IOException e) { e.printStackTrace(); }
+			return (SimpleFeatureCollection) featureSource.getFeatures(filter);
+		} catch (Exception e) { e.printStackTrace(); }
 		return null;
 	}
 
-	public static Collection<SimpleFeature> getFeatureCollectionF(String shpFilePath){ return getFeatureCollectionF(shpFilePath, Filter.INCLUDE); }
-	public static Collection<SimpleFeature> getFeatureCollectionF(String shpFilePath, Filter filter){
+	public Collection<SimpleFeature> getFeatureCollectionF(){ return getFeatureCollectionF(Filter.INCLUDE); }
+	public Collection<SimpleFeature> getFeatureCollectionF(Filter filter){
 		Collection<SimpleFeature> col = new HashSet<SimpleFeature>();
-		FeatureIterator<SimpleFeature> it = getFeatureCollection(shpFilePath, filter).features();
+		FeatureIterator<SimpleFeature> it = getFeatureCollection(filter).features();
 		while (it.hasNext()) col.add(it.next());
 		it.close();
 		return col;
 	}
 
+	public static ShapeFile union(ShapeFile... shapefiles){
+		//TODO
+		return null;
+	}
 
 }
