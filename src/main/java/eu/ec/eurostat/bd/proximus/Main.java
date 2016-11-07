@@ -17,6 +17,7 @@ import eu.ec.estat.java4eurostat.base.StatsIndex;
 import eu.ec.estat.java4eurostat.io.CSV;
 import eu.ec.estat.java4eurostat.io.DicUtil;
 import eu.ec.eurostat.geostat.StatisticalUnitIntersectionWithGeoLayer;
+import eu.ec.eurostat.geostat.StatisticalUnitsIntersectionMatrix;
 
 /**
  * @author julien Gaffuri
@@ -34,9 +35,11 @@ public class Main {
 	public static String PROXIMUS_VORONOI_POP_PATH = BASE_PATH + "BE_mobile_phone_proximus/voronoi_population.csv";
 	public static String BUILDINGS_SHP_PATH = BASE_PATH + "BE_mobile_phone_proximus/mob/buildings_wal_lux.shp"; //TODO integrate all building shp into one
 
-	public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
-	public static String matrix_proximus_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_proximus_grid.csv";
 	public static String matrix_municipalities_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_municipalities_grid.csv";
+	//public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
+	public static String matrix_voronoi_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_voronoi_grid.csv";
+	public static String matrix_building_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_building_grid.csv";
+	public static String matrix_building_voronoi = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_building_voronoi.csv";
 
 	public static String stats_grid_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/building_intersection_with_grid.csv";
 	public static String buildingDensityFromGrid = BASE_PATH+"BE_mobile_phone_proximus/mob/building_pop_from_grid.csv";
@@ -179,6 +182,12 @@ public class Main {
 		System.out.println("Start");
 
 		//computeGridAttribute(GEOSTAT_GRID_PATH);
+
+		StatisticalUnitsIntersectionMatrix.compute("municipality", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
+		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
+		StatisticalUnitsIntersectionMatrix.compute("voronoi", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_voronoi_grid);
+		StatisticalUnitsIntersectionMatrix.compute("building", BUILDINGS_SHP_PATH, "OBJECTID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_building_grid);
+		StatisticalUnitsIntersectionMatrix.compute("building", BUILDINGS_SHP_PATH, "OBJECTID", "voronoi", PROXIMUS_VORONOI, "voronoi_id", matrix_building_voronoi);
 
 		//StatisticalUnitsIntersectionMatrix.compute("municipality", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
