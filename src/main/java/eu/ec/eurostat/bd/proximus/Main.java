@@ -192,20 +192,24 @@ public class Main {
 		//StatisticalUnitIntersectionWithGeoLayer.compute(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoi_building_intersection);
 
 		//assess the building density based on grid pop
-		//StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, stats_grid_building_intersection, buildingDensityFromGrid);
+		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStatValueFromStatUnitValue(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, stats_grid_building_intersection, buildingDensityFromGrid);
 		//assess the building density based on voronoi pop
-		//StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", PROXIMUS_VORONOI_POP_PATH, voronoi_building_intersection, buildingDensityFromVoronoi);
+		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStatValueFromStatUnitValue(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", PROXIMUS_VORONOI_POP_PATH, voronoi_building_intersection, buildingDensityFromVoronoi);
 
 		//compare building densities - see discrepencies and possibly enrich model to reduce it (further)
 		//TODO: exclude activity building - include only habitation buildings
 
 		//aggregate building grid/population to grid
-		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoToStatisticalUnit();
-		//compare with initial grid population - should be the same
+		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromGrid, BASE_PATH+"BE_mobile_phone_proximus/mob/grid_pop_from_building_pop_from_grid.csv");
+		//TODO compare with initial grid population - should be the same
 
 		//aggregate building voronoi/population to grid
-		//compare with initial grid population
-		//compare with proximus computes grid population
+		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH+"BE_mobile_phone_proximus/mob/grid_pop_from_building_pop_from_grid.csv");
+		//TODO compare with initial grid population
+		//TODO compare with proximus computes grid population
+
+		//TODO: compute voronoi from stat grid - compare with proximus pop
+		//TODO: compute voronoi from stat grid, through buildings - compare with proximus pop
 
 		System.out.println("End");
 	}

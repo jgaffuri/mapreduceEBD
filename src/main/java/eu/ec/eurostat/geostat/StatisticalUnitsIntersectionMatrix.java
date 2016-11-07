@@ -24,6 +24,8 @@ public class StatisticalUnitsIntersectionMatrix {
 	 * Compute and store the intersection matrix between two statistical unit datasets of a same area of interest.
 	 * This intersection matrix computes the share of a statistical unit which intersects another one of the other datasets.
 	 * 
+	 * NB: this operation commutes, with matrix transposition.
+	 * 
 	 * @param datasetName1 name of the first dataset (for labelling)
 	 * @param shpFile1 path of the first dataset
 	 * @param idField1 name of the first dataset id attribute
@@ -47,6 +49,7 @@ public class StatisticalUnitsIntersectionMatrix {
 		bw.newLine();
 
 		//load feature collections
+		//TODO change with new methods - with iterators, a least for fc1
 		System.out.print("Loading...");
 		Collection<SimpleFeature> fc1 = new ShapeFile(shpFile1).dispose().getFeatureCollectionF();
 		Collection<SimpleFeature> fc2 = new ShapeFile(shpFile2).dispose().getFeatureCollectionF();
