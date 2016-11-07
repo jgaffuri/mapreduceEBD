@@ -98,7 +98,6 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 	public static void computeGeoDensity(String geoSHPFile, String geoIdField, String statUnitsSHPFile, String statUnitsIdField, String statUnitValuesPath, String statUnitGeoTotalAreaPath, String geoOutFile) {
 		try {
-
 			//create out file
 			File outFile_ = new File(geoOutFile);
 			if(outFile_.exists()) outFile_.delete();
@@ -108,9 +107,8 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			bw.write("id,population,density,_nbStatUnitIntersecting");
 			bw.newLine();
 
-
 			//open geo and statistical units shapefiles
-			ShapeFile geoShp = new ShapeFile(statUnitsSHPFile).dispose();
+			ShapeFile geoShp = new ShapeFile(geoSHPFile).dispose();
 			int nbGeo = geoShp.count();
 			ShapeFile statShp = new ShapeFile(statUnitsSHPFile);
 			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
@@ -168,6 +166,41 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			}
 			itGeo.close();
 			bw.close();
+		} catch (Exception e) { e.printStackTrace(); }
+	}
+
+
+
+	public static void aggregateStatValueFomGeoToStatisticalUnit(String statUnitsSHPFile, String statUnitsIdField, String geoSHPFile, String geoIdField, String geoValuesPath, String statUnitOutFile) {
+		try {
+			//create out file
+			File outFile_ = new File(statUnitOutFile);
+			if(outFile_.exists()) outFile_.delete();
+			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
+
+			//write header
+			bw.write("id,val");
+			bw.newLine();
+
+			//open statistical units and geo shapefiles
+			ShapeFile statShp = new ShapeFile(statUnitsSHPFile).dispose();
+			int nbStats = statShp.count();
+			ShapeFile geoShp = new ShapeFile(geoSHPFile);
+			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+
+			//load geo values
+			HashMap<String, String> geoValue = DicUtil.load(geoValuesPath, ",");
+
+			//go through stat units - purpose is to compute value from geo within
+			FeatureIterator<SimpleFeature> itStat = statShp.getFeatures();
+			int statCounter = 0;
+			while (itStat.hasNext()) {
+				SimpleFeature statUnit = itStat.next();
+				
+				//get all geo intersecting
+				
+			}
+
 		} catch (Exception e) { e.printStackTrace(); }
 	}
 

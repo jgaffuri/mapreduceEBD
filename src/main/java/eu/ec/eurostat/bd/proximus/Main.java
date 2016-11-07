@@ -194,13 +194,13 @@ public class Main {
 		//assess the building density based on grid pop
 		//StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, stats_grid_building_intersection, buildingDensityFromGrid);
 		//assess the building density based on voronoi pop
-		StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", GEOSTAT_POP_PATH, voronoi_building_intersection, buildingDensityFromVoronoi);
-		//TODO no intersection apparently - check projection?
+		//StatisticalUnitIntersectionWithGeoLayer.computeGeoDensity(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", PROXIMUS_VORONOI_POP_PATH, voronoi_building_intersection, buildingDensityFromVoronoi);
 
 		//compare building densities - see discrepencies and possibly enrich model to reduce it (further)
 		//TODO: exclude activity building - include only habitation buildings
 
 		//aggregate building grid/population to grid
+		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoToStatisticalUnit();
 		//compare with initial grid population - should be the same
 
 		//aggregate building voronoi/population to grid
