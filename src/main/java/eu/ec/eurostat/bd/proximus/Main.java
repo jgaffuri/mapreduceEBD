@@ -16,7 +16,6 @@ import eu.ec.estat.java4eurostat.base.StatsHypercube;
 import eu.ec.estat.java4eurostat.base.StatsIndex;
 import eu.ec.estat.java4eurostat.io.CSV;
 import eu.ec.estat.java4eurostat.io.DicUtil;
-import eu.ec.eurostat.geostat.StatisticalUnitIntersectionWithGeoLayer;
 import eu.ec.eurostat.geostat.StatisticalUnitsIntersectionMatrix;
 
 /**
@@ -38,8 +37,8 @@ public class Main {
 	public static String matrix_municipalities_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_municipalities_grid.csv";
 	//public static String matrix_nuts_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_nuts_grid.csv";
 	public static String matrix_voronoi_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_voronoi_grid.csv";
-	public static String matrix_building_grid = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_building_grid.csv";
-	public static String matrix_building_voronoi = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_building_voronoi.csv";
+	public static String matrix_grid_building = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_grid_building.csv";
+	public static String matrix_voronoi_building = BASE_PATH+"BE_mobile_phone_proximus/mob/matrix_voronoi_building.csv";
 
 	public static String stats_grid_building_intersection = BASE_PATH+"BE_mobile_phone_proximus/mob/building_intersection_with_grid.csv";
 	public static String buildingDensityFromGrid = BASE_PATH+"BE_mobile_phone_proximus/mob/building_pop_from_grid.csv";
@@ -183,15 +182,11 @@ public class Main {
 
 		//computeGridAttribute(GEOSTAT_GRID_PATH);
 
-		StatisticalUnitsIntersectionMatrix.compute("municipality", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
-		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
-		StatisticalUnitsIntersectionMatrix.compute("voronoi", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_voronoi_grid);
-		StatisticalUnitsIntersectionMatrix.compute("building", BUILDINGS_SHP_PATH, "OBJECTID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_building_grid);
-		StatisticalUnitsIntersectionMatrix.compute("building", BUILDINGS_SHP_PATH, "OBJECTID", "voronoi", PROXIMUS_VORONOI, "voronoi_id", matrix_building_voronoi);
-
 		//StatisticalUnitsIntersectionMatrix.compute("municipality", MUNICIPALITIES_PATH, "CENSUS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_municipalities_grid);
 		//StatisticalUnitsIntersectionMatrix.compute("nuts", NUTS_PATH, "NUTS_ID", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_nuts_grid);
-		//StatisticalUnitsIntersectionMatrix.compute("phone", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_proximus_grid);
+		StatisticalUnitsIntersectionMatrix.compute("voronoi", PROXIMUS_VORONOI, "voronoi_id", "grid", GEOSTAT_GRID_PATH, "CELLCODE", matrix_voronoi_grid);
+		StatisticalUnitsIntersectionMatrix.compute("grid", GEOSTAT_GRID_PATH, "CELLCODE", "building", BUILDINGS_SHP_PATH, "OBJECTID", matrix_grid_building);
+		StatisticalUnitsIntersectionMatrix.compute("voronoi", PROXIMUS_VORONOI, "voronoi_id", "building", BUILDINGS_SHP_PATH, "OBJECTID", matrix_voronoi_building);
 
 		//validateEurostatGeostat();
 
@@ -213,7 +208,7 @@ public class Main {
 		//TODO compare with initial grid population - should be the same
 
 		//aggregate building voronoi/population to grid
-		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH+"BE_mobile_phone_proximus/mob/grid_pop_from_building_pop_from_grid.csv");
+		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH+"BE_mobile_phone_proximus/mob/grid_pop_from_building_pop_from_grid.csv");
 		//TODO compare with initial grid population
 		//TODO compare with proximus computes grid population
 

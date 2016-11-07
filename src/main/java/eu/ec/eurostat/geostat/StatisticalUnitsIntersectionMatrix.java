@@ -50,18 +50,21 @@ public class StatisticalUnitsIntersectionMatrix {
 		bw.newLine();
 
 		//load shapefile 1
-		FeatureIterator<SimpleFeature> itSu1 = new ShapeFile(shpFilePath1).dispose().getFeatures();
+		ShapeFile shpFile1 = new ShapeFile(shpFilePath1);
+		int nb1 = shpFile1.count();
+		FeatureIterator<SimpleFeature> itSu1 = shpFile1.dispose().getFeatures();
 
 		//preload shapefile 2
 		ShapeFile shpFile2 = new ShapeFile(shpFilePath2);
 		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
 		//go through shapefile 1
+		int counter = 0;
 		while (itSu1.hasNext()) {
 			SimpleFeature f1 = itSu1.next();
 			String id1 = f1.getAttribute(idField1).toString();
 
-			System.out.println(datasetName1+" - "+id1);
+			System.out.println(datasetName1+" - "+id1+" - ("+datasetName2+")" + " " + (counter++) + "/" + nb1 + " " + (Math.round(10000*counter/nb1))*0.01 + "%");
 
 			Geometry geom1 = (Geometry) f1.getDefaultGeometryProperty().getValue();
 			double a1 = geom1.getArea();
@@ -81,7 +84,7 @@ public class StatisticalUnitsIntersectionMatrix {
 				//store relation data
 				String id2 = f2.getAttribute(idField2).toString();
 				String line = id1+","+id2+","+(interArea/geom2.getArea())+","+(interArea/a1)+","+interArea;
-				System.out.println(datasetName2+" - "+id2+" - "+line);
+				//System.out.println(datasetName2+" - "+id2+" - "+line);
 				bw.write(line);
 				bw.newLine();
 			}
