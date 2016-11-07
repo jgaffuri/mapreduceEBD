@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 
 import org.geotools.data.shapefile.shp.ShapefileException;
 import org.geotools.factory.CommonFactoryFinder;
@@ -14,6 +15,10 @@ import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import eu.ec.estat.java4eurostat.base.StatsHypercube;
+import eu.ec.estat.java4eurostat.base.StatsIndex;
+import eu.ec.estat.java4eurostat.io.CSV;
+import eu.ec.estat.java4eurostat.io.DicUtil;
 import eu.ec.eurostat.ShapeFile;
 
 /**
@@ -21,6 +26,17 @@ import eu.ec.eurostat.ShapeFile;
  *
  */
 public class StatisticalUnitsIntersectionMatrix {
+
+	//create out file
+	private static BufferedWriter createFile(String path, boolean override){
+		File f = new File(path);
+		if(override && f.exists()) f.delete();
+		try {
+			return new BufferedWriter(new FileWriter(f, true));
+		} catch (IOException e) { e.printStackTrace(); }
+		return null;
+	}
+
 
 	/**
 	 * Compute and store the intersection matrix between two statistical unit datasets of a same area of interest.
@@ -34,32 +50,28 @@ public class StatisticalUnitsIntersectionMatrix {
 	 * @param datasetName2
 	 * @param shpFilePath2
 	 * @param idField2
-	 * @param outFile The output file where to store the intersection matrix
 	 * @throws ShapefileException
 	 * @throws MalformedURLException
 	 * @throws IOException
 	 */
-	public static void compute(String datasetName1, String shpFilePath1, String idField1, String datasetName2, String shpFilePath2, String idField2, String outFile) throws ShapefileException, MalformedURLException, IOException{
-		//create out file
-		File outFile_ = new File(outFile);
-		if(outFile_.exists()) outFile_.delete();
-		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
-
-		//write header
-		bw.write(datasetName1+","+datasetName2+","+datasetName2+"_to_"+datasetName1+","+datasetName1+"_to_"+datasetName2+",intersectionArea");
-		bw.newLine();
+	public static void compute(String datasetName1, String shpFilePath1, String idField1, String datasetName2, String shpFilePath2, String idField2, String outFolder) throws ShapefileException, MalformedURLException, IOException{
+		//create out files
+		BufferedWriter bw1from2 = createFile(outFolder+"matrix_"+datasetName1+"_from_"+datasetName2+".csv", true);
+		bw1from2.write(datasetName1+","+datasetName2+",ratio,intersection_area"); bw1from2.newLine();
+		BufferedWriter bw2from1 = createFile(outFolder+"matrix_"+datasetName2+"_from_"+datasetName1+".csv", true);
+		bw2from1.write(datasetName2+","+datasetName1+",ratio,intersection_area"); bw2from1.newLine();
 
 		//load shapefile 1
 		ShapeFile shpFile1 = new ShapeFile(shpFilePath1);
 		int nb1 = shpFile1.count();
 		FeatureIterator<SimpleFeature> itSu1 = shpFile1.dispose().getFeatures();
 
-		//preload shapefile 2
+		//(pre)load shapefile 2
 		ShapeFile shpFile2 = new ShapeFile(shpFilePath2);
 		FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
 		//go through shapefile 1
-		int counter = 0;
+		int counter = 1;
 		while (itSu1.hasNext()) {
 			SimpleFeature f1 = itSu1.next();
 			String id1 = f1.getAttribute(idField1).toString();
@@ -83,63 +95,51 @@ public class StatisticalUnitsIntersectionMatrix {
 
 				//store relation data
 				String id2 = f2.getAttribute(idField2).toString();
-				String line = id1+","+id2+","+(interArea/geom2.getArea())+","+(interArea/a1)+","+interArea;
-				//System.out.println(datasetName2+" - "+id2+" - "+line);
-				bw.write(line);
-				bw.newLine();
+				bw1from2.write( id1+","+id2+","+(interArea/geom2.getArea())+","+interArea );
+				bw1from2.newLine();
+				bw2from1.write( id2+","+id1+","+(interArea/a1)+","+interArea );
+				bw2from1.newLine();
 			}
 			itSu2.close();
 		}
 		itSu1.close();
-		bw.close();
+		bw1from2.close();
+		bw2from1.close();
 
 	}
 
 
-
-	/*	public static void computeOld(String datasetName1, String shpFile1, String idField1, String datasetName2, String shpFile2, String idField2, String outFile) throws ShapefileException, MalformedURLException, IOException{
-
+	//TODO: document. compute 1 from 2. Can be seen as conversion from 2 to 1.
+	public static void computeStatValueFromIntersection(String datasetName1, String idField1, String datasetName2, String idField2, String statValuesFilePath2, String intersectionMatrix1from2, String outFolder) throws IOException {
 		//create out file
-		File outFile_ = new File(outFile);
-		if(outFile_.exists()) outFile_.delete();
-		BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
+		BufferedWriter bw1from2 = createFile(outFolder+"stat_values_"+datasetName1+"_from_"+datasetName2+"_intersection.csv", true);
+		bw1from2.write(datasetName1+",value_from_"+datasetName2+"_intersection"); bw1from2.newLine();
 
-		//write header
-		bw.write(datasetName1+","+datasetName2+","+datasetName2+"_to_"+datasetName1+","+datasetName1+"_to_"+datasetName2);
-		bw.newLine();
+		//load intersection matrix
+		StatsHypercube matrix = CSV.load(intersectionMatrix1from2, "ratio"); matrix.delete("intersection_area");
+		StatsIndex matrixI = new StatsIndex(matrix, "municipality", "grid"); matrix = null;
+		//matrixI.print();
 
-		//load feature collections
-		System.out.print("Loading...");
-		Collection<SimpleFeature> fc1 = new ShapeFile(shpFile1).dispose().getFeatureCollectionF();
-		Collection<SimpleFeature> fc2 = new ShapeFile(shpFile2).dispose().getFeatureCollectionF();
-		System.out.println(" Done.");
+		//load 2 stat values
+		HashMap<String, String> statValues2 = DicUtil.load(statValuesFilePath2, ",");
 
-		for(SimpleFeature f1 : fc1) {
-			Geometry geom1 = (Geometry) f1.getDefaultGeometryProperty().getValue();
-			double a1 = geom1.getArea();
-			String id1 = f1.getAttribute(idField1).toString();
-			System.out.println(id1);
+		for(String id1 : matrixI.getKeys()){
+			double statValue1 = 0;
+			//compute weigthted average of 2 contributions
+			for(String id2 : matrixI.getKeys(id1)){
+				String statValue2 = statValues2.get(id2);
+				if(statValue2 == null || statValue2.equals("")) continue;
 
-			for(SimpleFeature f2 : fc2) {
-				//get input feature 2 data
-				Geometry geom2 = (Geometry) f2.getDefaultGeometryProperty().getValue();
+				String weight = matrixI.getSingleValueFlagged(id1, id2);
+				if(weight == null || weight.equals("")) continue;
 
-				//check intersection
-				if(!geom1.intersects(geom2)) continue;
-				double interArea = geom1.intersection(geom2).getArea();
-				if(interArea == 0) continue;
-
-				//compute area ratios
-				double ratio2 = interArea/a1, ratio1 = interArea/geom2.getArea();
-
-				//store relation data
-				bw.write(id1+","+f2.getAttribute(idField2).toString()+","+ratio1+","+ratio2);
-				bw.newLine();
+				statValue1 += Double.parseDouble(weight) * Double.parseDouble(statValue2);
 			}
+			//store
+			bw1from2.write( id1+","+statValue1 );
+			bw1from2.newLine();
 		}
-		bw.close();
-
+		bw1from2.close();
 	}
-	 */
 
 }

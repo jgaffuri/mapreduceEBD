@@ -26,15 +26,15 @@ import eu.ec.eurostat.ShapeFile;
  */
 public class StatisticalUnitIntersectionWithGeoLayer {
 
-
 	/**
-	 * Compute intersection between statistical units layer and geographic layer
+	 * Compute statistics on geo objects in statistical units.
 	 * 
 	 * @param statUnitsSHPFile
 	 * @param statUnitIdField
 	 * @param geoSHPFile
+	 * @param statUnitOutFile
 	 */
-	public static void compute(String statUnitsSHPFile, String statUnitIdField, String geoSHPFile, String statUnitOutFile) {
+	public static void computeGeoStats(String statUnitsSHPFile, String statUnitIdField, String geoSHPFile, String statUnitOutFile) {
 		try {
 			//create out file
 			File outFile_ = new File(statUnitOutFile);
@@ -122,7 +122,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 			//go through geo - purpose is to compute geo pop/density
 			FeatureIterator<SimpleFeature> itGeo = geoShp.getFeatures();
-			int geoCounter = 0;
+			int geoCounter = 1;
 			while (itGeo.hasNext()) {
 				SimpleFeature geoUnit = itGeo.next();
 				String geoId = geoUnit.getAttribute(geoIdField).toString();
@@ -194,7 +194,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 			//go through stat units - purpose is to compute value from geos intersecting
 			FeatureIterator<SimpleFeature> itStat = statShp.getFeatures();
-			int statCounter = 0;
+			int statCounter = 1;
 			while (itStat.hasNext()) {
 				SimpleFeature statUnit = itStat.next();
 				String statId = statUnit.getAttribute(statUnitsIdField).toString();
