@@ -4,4 +4,5 @@
 *.class
 /target/
 /src/main/java/eu/ec/estat/bd/Config.java
+/src/main/java/eu/ec/eurostat/bd/Config.java
 /out/

@@ -8,8 +8,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import eu.ec.estat.bd.Config;
 import eu.ec.estat.java4eurostat.io.IOUtil;
-import eu.ec.eurostat.bd.Config;
 import eu.ec.eurostat.bd.ScrapingScheduler;
 import eu.ec.eurostat.bd.ScrapingScheduler.Function;
 import eu.ec.eurostat.bd.ScrapingScheduler.QueryType;
