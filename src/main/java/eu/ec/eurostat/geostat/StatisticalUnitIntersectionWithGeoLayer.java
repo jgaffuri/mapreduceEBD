@@ -43,20 +43,22 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
 
 			//write header
-			bw.write("id,number,area,length,area_density,length_density");
+			bw.write(statUnitIdField+",number,area,length,area_density,length_density");
 			bw.newLine();
 
 			//open statistical units and geo shapefiles
 			ShapeFile statShp = new ShapeFile(statUnitsSHPFile).dispose();
-			ShapeFile geoShp = new ShapeFile(statUnitsSHPFile);
+			int nbStats = statShp.count();
+			ShapeFile geoShp = new ShapeFile(geoSHPFile);
 			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
 			//go through statistical units
 			FeatureIterator<SimpleFeature> itStat = statShp.getFeatures();
+			int statCounter = 1;
 			while (itStat.hasNext()) {
 				SimpleFeature statUnit = itStat.next();
 				String statUnitId = statUnit.getAttribute(statUnitIdField).toString();
-				System.out.println(statUnitId);
+				System.out.println(statUnitId + " " + (statCounter++) + "/" + nbStats + " " + (Math.round(10000*statCounter/nbStats))*0.01 + "%");
 
 				//get all geo intersecting the stat unit (with spatial index)
 				Geometry StatUnitGeom = (Geometry) statUnit.getDefaultGeometryProperty().getValue();
@@ -180,6 +182,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 
 
+	//TODO merge with aggregateGeoStatsFromGeoToStatisticalUnits once generic aggregation model is there ?
 	public static void aggregateStatValueFomGeoValues(String statUnitsSHPFile, String statUnitsIdField, String geoSHPFile, String geoIdField, String geoValuesPath, String statUnitOutFile) {
 		try {
 			//create out file
@@ -205,8 +208,8 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			int statCounter = 1;
 			while (itStat.hasNext()) {
 				SimpleFeature statUnit = itStat.next();
-				String statId = statUnit.getAttribute(statUnitsIdField).toString();
-				System.out.println(statId + " " + (statCounter++) + "/" + nbStats + " " + (Math.round(10000*statCounter/nbStats))*0.01 + "%");
+				String statUnitId = statUnit.getAttribute(statUnitsIdField).toString();
+				System.out.println(statUnitId + " " + (statCounter++) + "/" + nbStats + " " + (Math.round(10000*statCounter/nbStats))*0.01 + "%");
 
 				Geometry statGeom = (Geometry) statUnit.getDefaultGeometryProperty().getValue();
 
@@ -236,7 +239,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				if(nbGeos == 0) continue;
 
 				//store
-				String line = statId+","+statValue+","+statValue/statGeom.getArea()+","+nbGeos;
+				String line = statUnitId+","+statValue+","+statValue/statGeom.getArea()+","+nbGeos;
 				System.out.println(line);
 				bw.write(line);
 				bw.newLine();
