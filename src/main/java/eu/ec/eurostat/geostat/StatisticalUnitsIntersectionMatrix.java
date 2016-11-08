@@ -27,29 +27,19 @@ import eu.ec.eurostat.ShapeFile;
  */
 public class StatisticalUnitsIntersectionMatrix {
 
-	//create out file
-	private static BufferedWriter createFile(String path, boolean override){
-		File f = new File(path);
-		if(override && f.exists()) f.delete();
-		try {
-			return new BufferedWriter(new FileWriter(f, true));
-		} catch (IOException e) { e.printStackTrace(); }
-		return null;
-	}
-
-
 	/**
-	 * Compute and store the intersection matrix between two statistical unit datasets of a same area of interest.
-	 * This intersection matrix computes the share of a statistical unit which intersects another one of the other datasets.
+	 * Compute the intersection matrix between two statistical unit datasets of a same area of interest.
+	 * This intersection matrix computes the share of a statistical unit which intersects another ones of another statistical units dataset.
 	 * 
-	 * NB: this operation commutes, with matrix transposition.
+	 * NB: this operation commutes.
 	 * 
 	 * @param datasetName1 name of the first dataset (for labelling)
-	 * @param shpFilePath1 path of the first dataset
+	 * @param shpFilePath1 path of the first dataset, as shapefile
 	 * @param idField1 name of the first dataset id attribute
-	 * @param datasetName2
-	 * @param shpFilePath2
-	 * @param idField2
+	 * @param datasetName2 name of the second dataset (for labelling)
+	 * @param shpFilePath2 path of the second dataset, as shapefile. NB: for performence improvement, a spatial index should be created for this file.
+	 * @param idField2 name of the second dataset id attribute
+	 * @param outFolder the folder where output files are stored
 	 * @throws ShapefileException
 	 * @throws MalformedURLException
 	 * @throws IOException
@@ -140,6 +130,17 @@ public class StatisticalUnitsIntersectionMatrix {
 			bw1from2.newLine();
 		}
 		bw1from2.close();
+	}
+
+
+	//create out file
+	private static BufferedWriter createFile(String path, boolean override){
+		File f = new File(path);
+		if(override && f.exists()) f.delete();
+		try {
+			return new BufferedWriter(new FileWriter(f, true));
+		} catch (IOException e) { e.printStackTrace(); }
+		return null;
 	}
 
 }
