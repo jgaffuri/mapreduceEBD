@@ -27,14 +27,15 @@ import eu.ec.eurostat.ShapeFile;
 public class StatisticalUnitIntersectionWithGeoLayer {
 
 	/**
-	 * Compute statistics on geo objects in statistical units.
+	 * Compute statistics on geo objects at statistical units level.
+	 * (Transfer information from geo layer to statistical units layer. TODO: define more generic aggregation model)
 	 * 
 	 * @param statUnitsSHPFile
 	 * @param statUnitIdField
 	 * @param geoSHPFile
 	 * @param statUnitOutFile
 	 */
-	public static void computeGeoStats(String statUnitsSHPFile, String statUnitIdField, String geoSHPFile, String statUnitOutFile) {
+	public static void aggregateGeoStatsFromGeoToStatisticalUnits(String statUnitsSHPFile, String statUnitIdField, String geoSHPFile, String statUnitOutFile) {
 		try {
 			//create out file
 			File outFile_ = new File(statUnitOutFile);
@@ -42,8 +43,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
 
 			//write header
-			bw.write("id,area");
-			//bw.write("id,number,area,length"/*+",area_density,length_density"*/);
+			bw.write("id,number,area,length,area_density,length_density");
 			bw.newLine();
 
 			//open statistical units and geo shapefiles
@@ -63,11 +63,9 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				FeatureIterator<SimpleFeature> itGeo = geoShp.getFeatures(statUnit.getBounds(), "the_geom", ff);
 
 				//compute stat on geo: total area/volume, number, building size distribution
-				int nbGeo=0; double totalArea=0 /*, totalLength=0*/;
+				int nbGeo=0; double totalArea=0, totalLength=0;
 				while (itGeo.hasNext()) {
 					SimpleFeature geo = itGeo.next();
-
-					//TODO add additional filter here?
 
 					Geometry geoGeom = (Geometry) geo.getDefaultGeometryProperty().getValue();
 					if(!geoGeom.intersects(StatUnitGeom)) continue;
@@ -76,15 +74,14 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 					nbGeo++;
 					totalArea += inter.getArea();
-					//totalLength += inter.getLength();
+					totalLength += inter.getLength();
 				}
 				itGeo.close();
 
 				if(nbGeo == 0) continue;
 
 				//store
-				String line = statUnitId+","+totalArea;
-				//String line = statUnitId+","+nbGeo+","+totalArea+","+totalLength/*+","+totalArea/StatUnitGeom.getArea()+","+totalLength/StatUnitGeom.getArea()*/;
+				String line = statUnitId+","+nbGeo+","+totalArea+","+totalLength+","+totalArea/StatUnitGeom.getArea()+","+totalLength/StatUnitGeom.getArea();
 				System.out.println(line);
 				bw.write(line);
 				bw.newLine();
@@ -97,7 +94,19 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 	}
 
 
-	public static void computeGeoStatValueFromStatUnitValue(String geoSHPFile, String geoIdField, String statUnitsSHPFile, String statUnitsIdField, String statUnitValuesPath, String statUnitGeoTotalAreaPath, String geoOutFile) {
+	/**
+	 * Compute statistics on statistical units at geo objects level.
+	 * (Transfer information from statistical units layer to geo layer. TODO: define more generic allocation model)
+	 * 
+	 * @param geoSHPFile
+	 * @param geoIdField
+	 * @param statUnitsSHPFile
+	 * @param statUnitsIdField
+	 * @param statUnitValuesPath
+	 * @param statUnitGeoStatValuesPath
+	 * @param geoOutFile
+	 */
+	public static void allocateGeoStatsFromStatisticalUnitsToGeo(String geoSHPFile, String geoIdField, String statUnitsSHPFile, String statUnitsIdField, String statUnitValuesPath, String statUnitGeoStatValuesPath, String geoOutFile) {
 		try {
 			//create out file
 			File outFile_ = new File(geoOutFile);
@@ -105,7 +114,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
 
 			//write header
-			bw.write(geoIdField+",value,density,_nbStatUnitIntersecting");
+			bw.write(geoIdField+",value,pop,density,_nbStatUnitIntersecting");
 			bw.newLine();
 
 			//open geo and statistical units shapefiles
@@ -114,11 +123,10 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 			ShapeFile statShp = new ShapeFile(statUnitsSHPFile);
 			FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
 
-			//load stat unit population data
+			//load stat unit values
 			HashMap<String, String> statUnitValue = DicUtil.load(statUnitValuesPath, ",");
-
-			//get geo total area by SU
-			HashMap<String, String> statUnitGeoTotalArea = DicUtil.load(statUnitGeoTotalAreaPath, ",");
+			//load stat unit geostat values
+			HashMap<String, String> statUnitGeoTotalArea = DicUtil.load(statUnitGeoStatValuesPath, ",");
 
 			//go through geo - purpose is to compute geo pop/density
 			FeatureIterator<SimpleFeature> itGeo = geoShp.getFeatures();
