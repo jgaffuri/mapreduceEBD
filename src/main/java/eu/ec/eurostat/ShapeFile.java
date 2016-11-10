@@ -14,10 +14,15 @@ import java.util.Map;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
+import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
+import org.geotools.data.Transaction;
+import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
@@ -107,6 +112,53 @@ public class ShapeFile {
 		it.close();
 		return col;
 	}
+
+
+	
+	
+	public static void saveSHP(SimpleFeatureCollection sfs, String outPath, String outFile) {
+		try {
+			new File(outPath).mkdirs();
+			ShapefileDataStoreFactory dsf = new ShapefileDataStoreFactory();
+			Map<String, Serializable> params = new HashMap<String, Serializable>();
+			params.put("url", new File(outPath+outFile).toURI().toURL());
+			params.put("create spatial index", Boolean.TRUE);
+			ShapefileDataStore ds = (ShapefileDataStore) dsf.createNewDataStore(params);
+			ds.createSchema(sfs.getSchema());
+
+			Transaction tr = new DefaultTransaction("create");
+			String tn = ds.getTypeNames()[0];
+			SimpleFeatureSource fs_ = ds.getFeatureSource(tn);
+
+			if (fs_ instanceof SimpleFeatureStore) {
+				SimpleFeatureStore fst = (SimpleFeatureStore) fs_;
+
+				fst.setTransaction(tr);
+				try {
+					fst.addFeatures(sfs);
+					tr.commit();
+				} catch (Exception problem) {
+					problem.printStackTrace();
+					tr.rollback();
+				} finally {
+					tr.close();
+				}
+			} else {
+				System.out.println(tn + " does not support read/write access");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public interface SelectionCriteria { boolean keep(Object o); }
+	public void filter(SelectionCriteria selCri){
+		//TODO
+		//return (val.equals(((SimpleFeature)f).getAttribute(att)));
+	}
+	
+
+	
 
 	public static ShapeFile union(String outPath, ShapeFile... shapefiles){ return union(outPath, Filter.INCLUDE, shapefiles); }
 	public static ShapeFile union(String outPath, Filter filter, ShapeFile... shapefiles){

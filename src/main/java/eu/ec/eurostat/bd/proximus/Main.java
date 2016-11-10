@@ -25,7 +25,7 @@ public class Main {
 	public static String GEOSTAT_GRID_PATH = BASE_PATH_ + "grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH_ + "voronoi.shp";
 	public static String PROXIMUS_VORONOI_POP_PATH = BASE_PATH_ + "voronoi_data.csv";
-	public static String BUILDINGS_SHP_PATH = BASE_PATH_ + "buildings_wal_lux.shp"; //TODO integrate all building shp into one
+	public static String BUILDINGS_SHP_PATH = BASE_PATH_ + "buildings_wal_lux.shp";
 
 	public static String gridBuildingStats = BASE_PATH_ + "building_intersection_with_grid.csv";
 	public static String buildingDensityFromGrid = BASE_PATH_ + "building_pop_from_grid.csv";
@@ -60,6 +60,8 @@ public class Main {
 
 		//compare building densities - see discrepencies and possibly enrich model to reduce it (further)
 		//TODO: exclude activity building - include only habitation buildings
+		//TODO take into account building heights
+		//TODO integrate all building shp into one
 
 		//aggregate building grid/population to grid
 		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromGrid, BASE_PATH_ + "grid_pop_from_building_pop_from_grid.csv");
@@ -67,11 +69,9 @@ public class Main {
 
 		//aggregate building voronoi/population to grid
 		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_voronoi.csv");
-		//TODO compare with initial grid population
-		//TODO compare with proximus computes grid population
+		//compare with proximus computes grid population
+		//compare with initial grid population
 
-		//TODO: compute voronoi from stat grid - compare with proximus pop
-		//TODO: compute voronoi from stat grid, through buildings - compare with proximus pop
 		//TODO compute stats for other geo themes for voronoi cell type caracterisation refinment (housing, activity, commute)
 
 		System.out.println("End");
