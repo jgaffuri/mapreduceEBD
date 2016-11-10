@@ -8,8 +8,6 @@ import java.net.MalformedURLException;
 
 import org.geotools.data.shapefile.shp.ShapefileException;
 
-import eu.ec.eurostat.geostat.StatisticalUnitIntersectionWithGeoLayer;
-
 /**
  * @author julien Gaffuri
  *
@@ -25,7 +23,7 @@ public class Main {
 	public static String GEOSTAT_GRID_PATH = BASE_PATH_ + "grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH_ + "voronoi.shp";
 	public static String PROXIMUS_VORONOI_POP_PATH = BASE_PATH_ + "voronoi_data.csv";
-	public static String BUILDINGS_SHP_PATH = BASE_PATH_ + "buildings_wal_lux.shp";
+	public static String BUILDINGS_SHP_PATH = BASE_PATH_ + "buildings_wal_lux.shp"; //
 
 	public static String gridBuildingStats = BASE_PATH_ + "building_intersection_with_grid.csv";
 	public static String buildingDensityFromGrid = BASE_PATH_ + "building_pop_from_grid.csv";
@@ -68,7 +66,7 @@ public class Main {
 		//compare with initial grid population - should be the same -> ok!
 
 		//aggregate building voronoi/population to grid
-		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_voronoi.csv");
+		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_voronoi.csv");
 		//compare with proximus computes grid population
 		//compare with initial grid population
 
