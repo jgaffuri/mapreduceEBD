@@ -62,16 +62,17 @@ public class Main {
 		//TODO: exclude activity building - include only habitation buildings
 
 		//aggregate building grid/population to grid
-		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromGrid, BASE_PATH_ + "grid_pop_from_building_pop_from_grid.csv");
-		//TODO *** compare with initial grid population - should be the same
+		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromGrid, BASE_PATH_ + "grid_pop_from_building_pop_from_grid.csv");
+		//compare with initial grid population - should be the same -> ok!
 
 		//aggregate building voronoi/population to grid
-		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_grid.csv");
+		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_voronoi.csv");
 		//TODO compare with initial grid population
 		//TODO compare with proximus computes grid population
 
 		//TODO: compute voronoi from stat grid - compare with proximus pop
 		//TODO: compute voronoi from stat grid, through buildings - compare with proximus pop
+		//TODO compute stats for other geo themes for voronoi cell type caracterisation refinment (housing, activity, commute)
 
 		System.out.println("End");
 	}
