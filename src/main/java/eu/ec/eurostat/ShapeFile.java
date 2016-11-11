@@ -194,8 +194,16 @@ public class ShapeFile {
 		return sfc;
 	}*/
 
-	private void findIntersections(String outputFile){
+	private void doBlabla(String... outputFile){
 		//TODO
+		//create output file - TODO: function to create shp file from schema
+		//create list of ids
+		//go through files
+		//go through features
+		//if feature attribute is in list of ids, continue
+		//add feature id to list
+		//add feature to save buffer (feature collection or collection?)
+		//save buffer regularly - TODO: function to flush features list into shp, in one shot
 	}
 
 	public static void main(String[] args) throws Exception {
