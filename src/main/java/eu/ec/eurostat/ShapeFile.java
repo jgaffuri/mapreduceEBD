@@ -11,7 +11,6 @@ import java.util.HashMap;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
@@ -19,6 +18,7 @@ import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.text.cql2.CQL;
 import org.opengis.feature.simple.SimpleFeature;
@@ -30,29 +30,53 @@ import org.opengis.geometry.BoundingBox;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Various functions to manipulate shapefiles efficiently
+ * Various functions to ease shapefiles manipulation
  * 
  * @author julien Gaffuri
  *
  */
 public class ShapeFile {
-	private String path;
 	private DataStore dataStore;
-	private FeatureSource<SimpleFeatureType, SimpleFeature> featureSource;
+	private SimpleFeatureStore featureSource;
+	//SimpleFeatureBuilder sfb = new SimpleFeatureBuilder(ft);
 
 	/**
-	 * A shapefile
+	 * Build and open a shapefile
 	 * 
 	 * @param path
 	 */
-	public ShapeFile(String path){
+	public ShapeFile(String path){ open(path); }
+
+	public ShapeFile(SimpleFeatureType ft, String folderPath, String fileName){
 		try {
-			this.path = path;
-			HashMap<String, Object> mapStat = new HashMap<String, Object>(); mapStat.put("url", new File(this.path).toURI().toURL());
-			dataStore = DataStoreFinder.getDataStore(mapStat);
-			featureSource = dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
+			//create shapefile
+			new File(folderPath).mkdirs();
+			File f = new File(folderPath+fileName);
+			if(f.exists()) f.delete();
+			HashMap<String, Serializable> params = new HashMap<String, Serializable>();
+			params.put("url", f.toURI().toURL());
+			params.put("create spatial index", Boolean.TRUE);
+			ShapefileDataStore ds = (ShapefileDataStore) new ShapefileDataStoreFactory().createNewDataStore(params);
+			ds.createSchema(ft);
+
+			//open shapefile
+			open(folderPath+fileName);
 		} catch (Exception e) { e.printStackTrace(); }
 	}
+
+	public ShapeFile(String[] ft, String folderPath, String fileName){
+		//TODO - use feature type construction methods
+	}
+
+
+	private void open(String path){
+		try {
+			HashMap<String, Object> params = new HashMap<String, Object>(); params.put("url", new File(path).toURI().toURL());
+			dataStore = DataStoreFinder.getDataStore(params);
+			featureSource = (SimpleFeatureStore) dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
+		} catch (Exception e) { e.printStackTrace(); }
+	}
+
 
 	/**
 	 * Dispose the datastore.
@@ -100,45 +124,25 @@ public class ShapeFile {
 		return null;
 	}
 
-	/*public Collection<SimpleFeature> getFeatureCollectionF(){ return getFeatureCollectionF(Filter.INCLUDE); }
-	public Collection<SimpleFeature> getFeatureCollectionF(Filter filter){
-		Collection<SimpleFeature> col = new HashSet<SimpleFeature>();
-		FeatureIterator<SimpleFeature> it = getFeatureCollection(filter).features();
-		while (it.hasNext()) col.add(it.next());
-		it.close();
-		return col;
-	}*/
-
-	public void filter(Filter filter, String outPath, String outFile){
+	public ShapeFile filter(Filter filter, String outPath, String outFile){
 		SimpleFeatureCollection sfc = getFeatureCollection(filter);
-		saveSHP(sfc, outPath, outFile);
+		return new ShapeFile(sfc.getSchema(), outPath, outFile).add(sfc);
 	}
 
-
-	public static void saveSHP(SimpleFeatureCollection sfs, String outPath, String outFile) {
+	public ShapeFile add(SimpleFeature f) {
+		DefaultFeatureCollection fs = new DefaultFeatureCollection(null, f.getFeatureType());
+		fs.add(f);
+		return add(fs);
+	}
+	public ShapeFile add(SimpleFeatureCollection fs) {
 		try {
-			//create output file
-			new File(outPath).mkdirs();
-			File file = new File(outPath+outFile);
-			if(file.exists()) file.delete();
-
-			//create feature store
-			HashMap<String, Serializable> params = new HashMap<String, Serializable>();
-			params.put("url", file.toURI().toURL());
-			params.put("create spatial index", Boolean.TRUE);
-			ShapefileDataStore ds = (ShapefileDataStore) new ShapefileDataStoreFactory().createNewDataStore(params);
-			ds.createSchema(sfs.getSchema());
-			String tn = ds.getTypeNames()[0];
-			SimpleFeatureStore fst = (SimpleFeatureStore)ds.getFeatureSource(tn);
-
-			//creation transaction
 			Transaction tr = new DefaultTransaction("create");
-			fst.setTransaction(tr);
+			featureSource.setTransaction(tr);
 			try {
-				fst.addFeatures(sfs);
+				featureSource.addFeatures(fs);
 				tr.commit();
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (Exception problem) {
+				problem.printStackTrace();
 				tr.rollback();
 			} finally {
 				tr.close();
@@ -146,64 +150,19 @@ public class ShapeFile {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return this;
 	}
-
-
-	/*/add feature to a shapefile
-	public static void add(SimpleFeature f, String inFile) {
-		try {
-			Map<String,URL> map = new HashMap<String,URL>();
-			map.put("url", new File(inFile).toURI().toURL());
-			DataStore ds = DataStoreFinder.getDataStore(map);
-			String typeName = ds.getTypeNames()[0];
-			SimpleFeatureType ft = ds.getFeatureSource(typeName).getFeatures().getSchema();
-
-			Transaction tr = new DefaultTransaction("create");
-			String tn = ds.getTypeNames()[0];
-			SimpleFeatureSource fs_ = ds.getFeatureSource(tn);
-
-			if (fs_ instanceof SimpleFeatureStore) {
-				SimpleFeatureStore fst = (SimpleFeatureStore) fs_;
-
-				DefaultFeatureCollection objs = new DefaultFeatureCollection(null, ft);
-				objs.add(f);
-
-				fst.setTransaction(tr);
-				try {
-					fst.addFeatures(objs);
-					tr.commit();
-				} catch (Exception problem) {
-					problem.printStackTrace();
-					tr.rollback();
-				} finally {
-					tr.close();
-				}
-			} else {
-				System.out.println(tn + " does not support read/write access");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}*/
-
-	/*
-	public static SimpleFeatureCollection get(SimpleFeature f) {
-		SimpleFeatureType ft = f.getFeatureType();
-		DefaultFeatureCollection sfc = new DefaultFeatureCollection(null, ft);
-		//SimpleFeatureBuilder sfb = new SimpleFeatureBuilder(ft);
-		return sfc;
-	}*/
 
 	private void doBlabla(String... outputFile){
 		//TODO
-		//create output file - TODO: function to create shp file from schema
+		//create output file
 		//create list of ids
 		//go through files
 		//go through features
 		//if feature attribute is in list of ids, continue
 		//add feature id to list
 		//add feature to save buffer (feature collection or collection?)
-		//save buffer regularly - TODO: function to flush features list into shp, in one shot
+		//save buffer regularly
 	}
 
 	public static void main(String[] args) throws Exception {
