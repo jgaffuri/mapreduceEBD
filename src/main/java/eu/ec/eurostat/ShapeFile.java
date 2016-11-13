@@ -378,7 +378,8 @@ public class ShapeFile {
 	 */
 
 	//TODO
-	//add column
+	//add/remove column
+	//See http://www.programcreek.com/java-api-examples/index.php?api=org.geotools.data.shapefile.dbf.DbaseFileHeader
 	//compute column
 
 	private void doBlabla(String... outputFile){
