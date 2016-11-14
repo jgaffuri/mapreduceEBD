@@ -382,27 +382,16 @@ public class ShapeFile {
 	//See http://www.programcreek.com/java-api-examples/index.php?api=org.geotools.data.shapefile.dbf.DbaseFileHeader
 	//compute column
 
-	private void doBlabla(String... outputFile){
-		//TODO
-		//create output file
-		//create list of ids
-		//go through files
-		//go through features
-		//if feature attribute is in list of ids, continue
-		//add feature id to list
-		//add feature to save buffer (feature collection or collection?)
-		//save buffer regularly
-	}
 
-	public static void main(String[] args) throws Exception {
+	/*public static void main(String[] args) throws Exception {
 		System.out.println("Start");
 
 		//FilterFactory ff = CommonFactoryFinder.getFilterFactory();
 		//Filter f = ff.propertyLessThan( ff.property( "AGE"), ff.literal( 12 ) );
-		Filter f = CQL.toFilter( "NATUR_CODE = 'BAT'" );
-		new ShapeFile("H:/geodata/merge.shp").filter(f, "H:/geodata/", "merge_BAT.shp");
+		//Filter f = CQL.toFilter( "NATUR_CODE = 'BAT'" );
+		//new ShapeFile("H:/geodata/merge.shp").filter(f, "H:/geodata/", "merge_BAT.shp");
 
 		System.out.println("end");
-	}
+	}*/
 
 }

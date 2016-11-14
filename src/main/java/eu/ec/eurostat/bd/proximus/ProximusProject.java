@@ -12,7 +12,7 @@ import org.geotools.data.shapefile.shp.ShapefileException;
  * @author julien Gaffuri
  *
  */
-public class Main {
+public class ProximusProject {
 	public static String BASE_PATH = "H:/geodata/";
 	public static String BASE_PATH_ = BASE_PATH + "BE_mobile_phone_proximus/";
 	public static String ESTAT_POP_NUTS_PATH = BASE_PATH + "eurobase/BE_pop_nuts3.csv";
@@ -71,6 +71,22 @@ public class Main {
 		//compare with initial grid population
 
 		//TODO compute stats for other geo themes for voronoi cell type caracterisation refinment (housing, activity, commute)
+
+
+
+
+		//TODO
+		//create output shp file
+		shp = ShapeFile(ft, );
+
+		//create list of ids
+		//go through files
+		//go through features
+		//if feature attribute is in list of ids, continue
+		//add feature id to list
+		//add feature to save buffer (feature collection or collection?)
+		//save buffer regularly
+
 
 		System.out.println("End");
 	}
