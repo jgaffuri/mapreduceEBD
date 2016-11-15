@@ -24,8 +24,6 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
-import org.geotools.filter.text.cql2.CQL;
-import org.geotools.filter.text.cql2.CQLException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -44,7 +42,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class ShapeFile {
 	private DataStore dataStore;
-	private SimpleFeatureStore featureSource;
+	private SimpleFeatureStore featureStore;
 	//SimpleFeatureBuilder sfb = new SimpleFeatureBuilder(ft);
 
 	/**
@@ -63,15 +61,14 @@ public class ShapeFile {
 	 */
 	public ShapeFile(SimpleFeatureType ft, String folderPath, String fileName){
 		try {
-			//create shapefile
 			new File(folderPath).mkdirs();
 			File f = new File(folderPath+fileName);
 			if(f.exists()) f.delete();
 			HashMap<String, Serializable> params = new HashMap<String, Serializable>();
 			params.put("url", f.toURI().toURL());
 			params.put("create spatial index", Boolean.TRUE);
-			ShapefileDataStore ds = (ShapefileDataStore) new ShapefileDataStoreFactory().createNewDataStore(params);
-			ds.createSchema(ft);
+			ShapefileDataStore sfds =  (ShapefileDataStore) new ShapefileDataStoreFactory().createNewDataStore( params );
+			sfds.createSchema(ft);
 
 			//open shapefile
 			open(folderPath+fileName);
@@ -96,7 +93,7 @@ public class ShapeFile {
 		try {
 			HashMap<String, Object> params = new HashMap<String, Object>(); params.put("url", new File(path).toURI().toURL());
 			dataStore = DataStoreFinder.getDataStore(params);
-			featureSource = (SimpleFeatureStore) dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
+			featureStore = (SimpleFeatureStore) dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
 		} catch (Exception e) { e.printStackTrace(); }
 	}
 
@@ -113,7 +110,7 @@ public class ShapeFile {
 
 	//get basic info on shp file
 
-	public SimpleFeatureType getSchema() { return featureSource.getSchema(); }
+	public SimpleFeatureType getSchema() { return featureStore.getSchema(); }
 	public String[] getAttributeNames(){
 		return getAttributeNames(getSchema());
 	}
@@ -132,7 +129,7 @@ public class ShapeFile {
 	}
 	public FeatureIterator<SimpleFeature> getFeatures(Filter filter) {
 		try {
-			return ((SimpleFeatureCollection) featureSource.getFeatures(filter)).features();
+			return ((SimpleFeatureCollection) featureStore.getFeatures(filter)).features();
 		} catch (IOException e) { e.printStackTrace(); }
 		return null;
 	}
@@ -140,7 +137,7 @@ public class ShapeFile {
 
 	public SimpleFeatureCollection getSimpleFeatures(){ return getSimpleFeatures(null); }
 	public SimpleFeatureCollection getSimpleFeatures(Filter f){
-		try { return DataUtilities.collection(featureSource.getFeatures(f)); } catch (Exception e) { e.printStackTrace(); }
+		try { return DataUtilities.collection(featureStore.getFeatures(f)); } catch (Exception e) { e.printStackTrace(); }
 		return null;
 	}
 
@@ -149,7 +146,7 @@ public class ShapeFile {
 	public int count(){ return count(Filter.INCLUDE); }
 	public int count(Filter filter){
 		try {
-			return featureSource.getCount(new Query( featureSource.getSchema().getTypeName(), filter ));
+			return featureStore.getCount(new Query( featureStore.getSchema().getTypeName(), filter ));
 		} catch (IOException e) { e.printStackTrace(); }
 		return -1;
 	}
@@ -163,13 +160,13 @@ public class ShapeFile {
 	public SimpleFeatureCollection getFeatureCollection(){ return getFeatureCollection(Filter.INCLUDE); }
 	public SimpleFeatureCollection getFeatureCollection(Filter filter){
 		try {
-			return (SimpleFeatureCollection) featureSource.getFeatures(filter);
+			return (SimpleFeatureCollection) featureStore.getFeatures(filter);
 		} catch (Exception e) { e.printStackTrace(); }
 		return null;
 	}
 
 	//"NATUR_CODE = 'BAT'"
-	public ShapeFile filter(String cqlString, String outPath, String outFile){
+	/*public ShapeFile filter(String cqlString, String outPath, String outFile){
 		Filter f = null;
 		try { f = CQL.toFilter(cqlString); } catch (CQLException e) { e.printStackTrace(); }
 		SimpleFeatureCollection sfc = getFeatureCollection(f);
@@ -178,20 +175,21 @@ public class ShapeFile {
 	public ShapeFile filter(Filter filter, String outPath, String outFile){
 		SimpleFeatureCollection sfc = getFeatureCollection(filter);
 		return new ShapeFile(sfc.getSchema(), outPath, outFile).add(sfc);
-	}
+	}*/
 
 
 	public ShapeFile add(SimpleFeature f) {
 		DefaultFeatureCollection fs = new DefaultFeatureCollection(null, f.getFeatureType());
+		//new ListFeatureCollection(f.getFeatureType(), sfc)
 		fs.add(f);
 		return add(fs);
 	}
 	public ShapeFile add(SimpleFeatureCollection fs) {
 		try {
 			Transaction tr = new DefaultTransaction("create");
-			featureSource.setTransaction(tr);
+			featureStore.setTransaction(tr);
 			try {
-				featureSource.addFeatures(fs);
+				featureStore.addFeatures(fs);
 				tr.commit();
 			} catch (Exception problem) {
 				problem.printStackTrace();
@@ -204,6 +202,22 @@ public class ShapeFile {
 		}
 		return this;
 	}
+
+	/*public static boolean add(String path, SimpleFeature f) {
+		DefaultFeatureCollection fs = new DefaultFeatureCollection(null, f.getFeatureType());
+		fs.add(f);
+		return add(path, fs);
+	}
+	public static boolean add(String path, SimpleFeatureCollection fs) {
+		ShapefileDumper dp = new ShapefileDumper(new File(path));
+		System.out.println(path);
+		System.out.println(new File(path).exists());
+		//dp.setCharset(Charset.forName("ISO-8859-15"));
+		//int maxSize = 100 * 1024 * 1024; dp.setMaxDbfSize(maxSize); dp.setMaxDbfSize(maxSize);
+		try { return dp.dump(fs); } catch (IOException e) { e.printStackTrace(); }
+		return false;
+	}*/
+
 
 
 
@@ -230,6 +244,8 @@ public class ShapeFile {
 			if(epsgCode>0) st += ":srid="+epsgCode;
 			if(data!=null) st += ","+data;
 			return DataUtilities.createType("ep", st);
+			//String,Integer,Double,Boolean,Date
+			//DataUtilities.createType( "my", "geom:Point,name:String,age:Integer,description:String" );
 		} catch (SchemaException e) {
 			e.printStackTrace();
 			return null;
