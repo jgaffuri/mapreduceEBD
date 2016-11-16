@@ -24,6 +24,9 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.filter.text.cql2.CQL;
+import org.geotools.filter.text.cql2.CQLException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -58,19 +61,22 @@ public class ShapeFile {
 	 * @param ft
 	 * @param folderPath
 	 * @param fileName
+	 * @param recreateOnExists
 	 */
-	public ShapeFile(SimpleFeatureType ft, String folderPath, String fileName){
+	public ShapeFile(SimpleFeatureType ft, String folderPath, String fileName, boolean recreateOnExists){
 		try {
 			new File(folderPath).mkdirs();
 			File f = new File(folderPath+fileName);
-			if(f.exists()) f.delete();
-			HashMap<String, Serializable> params = new HashMap<String, Serializable>();
-			params.put("url", f.toURI().toURL());
-			params.put("create spatial index", Boolean.TRUE);
-			ShapefileDataStore sfds =  (ShapefileDataStore) new ShapefileDataStoreFactory().createNewDataStore( params );
-			sfds.createSchema(ft);
 
-			//open shapefile
+			if(f.exists() && recreateOnExists) f.delete();
+			if(!f.exists()){
+				HashMap<String, Serializable> params = new HashMap<String, Serializable>();
+				params.put("url", f.toURI().toURL());
+				params.put("create spatial index", Boolean.TRUE);
+				ShapefileDataStore sfds =  (ShapefileDataStore) new ShapefileDataStoreFactory().createNewDataStore( params );
+				sfds.createSchema(ft);
+			}
+
 			open(folderPath+fileName);
 		} catch (Exception e) { e.printStackTrace(); }
 	}
@@ -79,13 +85,14 @@ public class ShapeFile {
 	 * Create a shapefile
 	 * 
 	 * @param geomType
-	 * @param epsgCode
-	 * @param attributes
+	 * @param epsgCode Ex: LAEA=3035
+	 * @param attributes Ex: name:String,age:Integer,description:String,qtity:Double,start:Date,exist:Boolean
 	 * @param folderPath
 	 * @param fileName
+	 * @param recreateOnExists
 	 */
-	public ShapeFile(String geomType, int epsgCode, String attributes, String folderPath, String fileName){
-		this(getFeatureType(geomType, epsgCode, attributes), folderPath, fileName);
+	public ShapeFile(String geomType, int epsgCode, String attributes, String folderPath, String fileName, boolean recreateOnExists){
+		this(getFeatureType(geomType, epsgCode, attributes), folderPath, fileName, recreateOnExists);
 	}
 
 
@@ -127,11 +134,20 @@ public class ShapeFile {
 		//Filter filter = ff.intersects(ff.property(geometryAttribute), ff.literal(StatUnitGeom));
 		return getFeatures(ff.bbox(ff.property(geometryAttribute), intersectionBB));
 	}
+	public FeatureIterator<SimpleFeature> getFeatures(String cqlString){ return getFeatures(getFilterFromCQL(cqlString)); }
 	public FeatureIterator<SimpleFeature> getFeatures(Filter filter) {
 		try {
 			return ((SimpleFeatureCollection) featureStore.getFeatures(filter)).features();
 		} catch (IOException e) { e.printStackTrace(); }
 		return null;
+	}
+
+
+	public SimpleFeature getSingleFeature(String cqlString){ return getSingleFeature(getFilterFromCQL(cqlString)); }
+	public SimpleFeature getSingleFeature(Filter filter){
+		FeatureIterator<SimpleFeature> it = getFeatures(filter);
+		if(!it.hasNext()) return null;
+		return it.next();
 	}
 
 
@@ -144,6 +160,7 @@ public class ShapeFile {
 
 
 	public int count(){ return count(Filter.INCLUDE); }
+	public int count(String cqlString){ return count(getFilterFromCQL(cqlString)); }
 	public int count(Filter filter){
 		try {
 			return featureStore.getCount(new Query( featureStore.getSchema().getTypeName(), filter ));
@@ -158,6 +175,7 @@ public class ShapeFile {
 		return getFeatureCollection(filter);
 	}
 	public SimpleFeatureCollection getFeatureCollection(){ return getFeatureCollection(Filter.INCLUDE); }
+	public SimpleFeatureCollection getFeatureCollection(String cqlString){ return getFeatureCollection(getFilterFromCQL(cqlString)); }
 	public SimpleFeatureCollection getFeatureCollection(Filter filter){
 		try {
 			return (SimpleFeatureCollection) featureStore.getFeatures(filter);
@@ -166,16 +184,16 @@ public class ShapeFile {
 	}
 
 	//"NATUR_CODE = 'BAT'"
-	/*public ShapeFile filter(String cqlString, String outPath, String outFile){
-		Filter f = null;
-		try { f = CQL.toFilter(cqlString); } catch (CQLException e) { e.printStackTrace(); }
-		SimpleFeatureCollection sfc = getFeatureCollection(f);
-		return new ShapeFile(sfc.getSchema(), outPath, outFile).add(sfc);
-	}
+	public ShapeFile filter(String cqlString, String outPath, String outFile){ return filter(getFilterFromCQL(cqlString), outPath, outFile); }
 	public ShapeFile filter(Filter filter, String outPath, String outFile){
+		//TODO add progressive saving with iterator
 		SimpleFeatureCollection sfc = getFeatureCollection(filter);
-		return new ShapeFile(sfc.getSchema(), outPath, outFile).add(sfc);
-	}*/
+		return new ShapeFile(sfc.getSchema(), outPath, outFile, true).add(sfc);
+	}
+
+	public SimpleFeature buildFeature(Object[] data){
+		return SimpleFeatureBuilder.build(getSchema(), data, "fid."+((long)(Math.random()*9E18)) );
+	}
 
 
 	public ShapeFile add(SimpleFeature f) {
@@ -223,6 +241,17 @@ public class ShapeFile {
 
 	//schema manipulation
 
+
+	public static class SHPGeomType{
+		public static final String POINT = "Point";
+		public static final String MULTI_POINT = "MultiPoint";
+		public static final String LINESTRING = "LineString";
+		public static final String MULTILINESTRING = "MultiLineString";
+		public static final String POLYGON = "Polygon";
+		public static final String MULTIPOLYGON = "MultiPolygon";
+	}
+
+
 	public static SimpleFeatureType getFeatureType(String geomType) {
 		return getFeatureType(geomType, -1);
 	}
@@ -262,6 +291,23 @@ public class ShapeFile {
 		}
 		return atts.toArray(new String[atts.size()]);
 	}
+
+
+
+
+
+	/**
+	 * Build filter from CQL string.
+	 * 
+	 * @param cqlString
+	 * @return
+	 */
+	private static Filter getFilterFromCQL(String cqlString){
+		try { return CQL.toFilter(cqlString); } catch (CQLException e) { e.printStackTrace(); }
+		return null;
+	}
+
+
 
 
 	/*
@@ -393,13 +439,9 @@ public class ShapeFile {
 
 	 */
 
-	//TODO
-	//add/remove column
-	//See http://www.programcreek.com/java-api-examples/index.php?api=org.geotools.data.shapefile.dbf.DbaseFileHeader
-	//compute column
 
 
-	/*public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
 		System.out.println("Start");
 
 		//FilterFactory ff = CommonFactoryFinder.getFilterFactory();
@@ -407,7 +449,36 @@ public class ShapeFile {
 		//Filter f = CQL.toFilter( "NATUR_CODE = 'BAT'" );
 		//new ShapeFile("H:/geodata/merge.shp").filter(f, "H:/geodata/", "merge_BAT.shp");
 
+		//create shapefile with user defined schema
+		ShapeFile shp = new ShapeFile(SHPGeomType.POINT, 3035, "desc:String,age:Integer,qtity:Double,start:Date,exist:Boolean", "H:/desktop/", "test.shp", false);
+
+		//create feature
+		//SimpleFeature feature = shp.buildFeature(new Object[]{new GeometryFactory().createPoint(new Coordinate(4018000,2960000)),"description6",-57,16.14165359,"2016-10-18",false} );
+		//System.out.println(feature);
+		//System.out.println(feature.getID());
+		//SimpleFeature feature = SimpleFeatureBuilder.build( type, values, "fid" );
+		//SimpleFeature feature = SimpleFeatureBuilder.copy( original );
+
+		//add features to the shapefile
+		//shp.add(feature);
+
+		//filter shapefile based on attributes
+		//shp.filter("age > 30", "H:/desktop/", "test_filter.shp");
+
+		//TODO remove features in shapefile
+		//featureStore.removeFeatures();
+
+		//TODO update attribute
+		SimpleFeature f37 = shp.getSingleFeature("age = 37");
+		System.out.println(f37);
+		f37.setAttribute("age", "999999");
+		System.out.println(f37);
+		//shp.add(f37);
+
+		//TODO add/remove column. See http://www.programcreek.com/java-api-examples/index.php?api=org.geotools.data.shapefile.dbf.DbaseFileHeader
+
+
 		System.out.println("end");
-	}*/
+	}
 
 }
