@@ -5,16 +5,8 @@ package eu.ec.eurostat.bd.proximus;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
-import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.shp.ShapefileException;
-import org.geotools.feature.FeatureIterator;
-import org.opengis.feature.simple.SimpleFeature;
-
-import eu.ec.eurostat.ShapeFile;
 
 /**
  * @author julien Gaffuri
@@ -86,8 +78,10 @@ public class ProximusProject {
 		//create output shp file based on input one
 		//new ShapeFile(new ShapeFile(BASE_PATH+"merge.shp").getSchema(), BASE_PATH, "merge_unique.shp");
 		//open out shapefile
-		ShapeFile outshp = new ShapeFile(BASE_PATH + "merge_unique.shp").dispose();
+		//ShapeFile outshp = new ShapeFile(BASE_PATH + "merge_unique.shp").dispose();
 
+
+		/*
 		//create and fill list of ids
 		HashSet<String> ids = new HashSet<String>();
 		FeatureIterator<SimpleFeature> it = outshp.getFeatures();
@@ -125,7 +119,7 @@ public class ProximusProject {
 			outshp.add(new ListFeatureCollection(inshp.getSchema(), sfc));
 			sfc.clear();
 		}
-
+		 */
 
 		System.out.println("End");
 	}

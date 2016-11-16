@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
@@ -19,7 +18,7 @@ import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.data.store.ContentFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -44,9 +43,8 @@ import com.vividsolutions.jts.geom.Geometry;
  *
  */
 public class ShapeFile {
-	private DataStore dataStore;
-	private SimpleFeatureStore featureStore;
-	//SimpleFeatureBuilder sfb = new SimpleFeatureBuilder(ft);
+	private ShapefileDataStore dataStore;
+	private ContentFeatureStore featureStore; //ShapefileFeatureStore
 
 	/**
 	 * Open a shapefile
@@ -99,8 +97,8 @@ public class ShapeFile {
 	private void open(String path){
 		try {
 			HashMap<String, Object> params = new HashMap<String, Object>(); params.put("url", new File(path).toURI().toURL());
-			dataStore = DataStoreFinder.getDataStore(params);
-			featureStore = (SimpleFeatureStore) dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
+			dataStore = (ShapefileDataStore) DataStoreFinder.getDataStore(params);
+			featureStore = (ContentFeatureStore) dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
 		} catch (Exception e) { e.printStackTrace(); }
 	}
 
@@ -147,7 +145,9 @@ public class ShapeFile {
 	public SimpleFeature getSingleFeature(Filter filter){
 		FeatureIterator<SimpleFeature> it = getFeatures(filter);
 		if(!it.hasNext()) return null;
-		return it.next();
+		SimpleFeature f = it.next();
+		it.close();
+		return f;
 	}
 
 
@@ -184,15 +184,27 @@ public class ShapeFile {
 	}
 
 	//"NATUR_CODE = 'BAT'"
-	public ShapeFile filter(String cqlString, String outPath, String outFile){ return filter(getFilterFromCQL(cqlString), outPath, outFile); }
-	public ShapeFile filter(Filter filter, String outPath, String outFile){
-		//TODO add progressive saving with iterator
-		SimpleFeatureCollection sfc = getFeatureCollection(filter);
-		return new ShapeFile(sfc.getSchema(), outPath, outFile, true).add(sfc);
+	public ShapeFile filter(String cqlString, String outPath, String outFile, boolean override){ return filter(getFilterFromCQL(cqlString), outPath, outFile, override); }
+	public ShapeFile filter(Filter filter, String outPath, String outFile, boolean override){
+		int bufferSize = 500;
+		ShapeFile shpOut = new ShapeFile(getSchema(), outPath, outFile, override);
+		FeatureIterator<SimpleFeature> it = getFeatures(filter);
+		DefaultFeatureCollection fs = new DefaultFeatureCollection("ZZZ"+this+Math.random(), getSchema());
+		while(it.hasNext()){
+			SimpleFeature f = it.next();
+			fs.add(f);
+			if(fs.size() >= bufferSize){
+				shpOut.add(fs);
+				fs.clear();
+			}
+		}
+		shpOut.add(fs);
+		it.close();
+		return shpOut;
 	}
 
 	public SimpleFeature buildFeature(Object[] data){
-		return SimpleFeatureBuilder.build(getSchema(), data, "fid."+((long)(Math.random()*9E18)) );
+		return SimpleFeatureBuilder.build(getSchema(), data, "fid."+this+((long)(Math.random()*9E18)) );
 	}
 
 
@@ -218,6 +230,13 @@ public class ShapeFile {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return this;
+	}
+
+
+	public ShapeFile remove(String cqlString){ return remove(getFilterFromCQL(cqlString)); }
+	public ShapeFile remove(Filter f) {
+		try { featureStore.removeFeatures(f); } catch (IOException e) { e.printStackTrace(); }
 		return this;
 	}
 
@@ -465,17 +484,36 @@ public class ShapeFile {
 		//filter shapefile based on attributes
 		//shp.filter("age > 30", "H:/desktop/", "test_filter.shp");
 
-		//TODO remove features in shapefile
-		//featureStore.removeFeatures();
+		//remove features in shapefile
+		//shp.remove("age = 0");
 
-		//TODO update attribute
-		SimpleFeature f37 = shp.getSingleFeature("age = 37");
-		System.out.println(f37);
-		f37.setAttribute("age", "999999");
-		System.out.println(f37);
-		//shp.add(f37);
+		//update attribute
+		/*SimpleFeature f = shp.getSingleFeature("age = 15");
+		f.setAttribute("age", "25");
+		shp.remove("age = 15");
+		shp.add(f);*/
 
-		//TODO add/remove column. See http://www.programcreek.com/java-api-examples/index.php?api=org.geotools.data.shapefile.dbf.DbaseFileHeader
+		//TODO add/remove column.
+		//SimpleFeatureType ft = shp.getSchema();
+		//System.out.println(ft);
+
+		/*
+		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+		b.setName("newFT");
+		b.addAll(ft.getAttributeDescriptors());
+		b.add("new", String.class);
+		SimpleFeatureType ft_ = b.buildFeatureType();
+		System.out.println(ft_);*/
+		//shp.dataStore.createSchema(ft_);
+		//TODO test that: shp.dataStore.updateSchema(ft_);
+
+		//See http://www.programcreek.com/java-api-examples/index.php?api=org.geotools.data.shapefile.dbf.DbaseFileHeader
+
+		//TODO test shp.featureStore.modifyFeatures
+
+		//Object dbfReader = shp.dataStore.openDbfReader();
+		//DbaseFileHeader dbfHeader = dbfReader.getHeader();
+
 
 
 		System.out.println("end");
