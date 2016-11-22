@@ -18,7 +18,7 @@ import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.store.ContentFeatureStore;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -44,7 +44,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class ShapeFile {
 	private ShapefileDataStore dataStore;
-	private ContentFeatureStore featureStore; //ShapefileFeatureStore
+	private SimpleFeatureStore featureStore; //ShapefileFeatureStore
 
 	/**
 	 * Open a shapefile
@@ -61,7 +61,7 @@ public class ShapeFile {
 	 * @param fileName
 	 * @param recreateOnExists
 	 */
-	public ShapeFile(SimpleFeatureType ft, String folderPath, String fileName, boolean recreateOnExists){
+	public ShapeFile(SimpleFeatureType ft, String folderPath, String fileName, boolean withSpatialIndex, boolean recreateOnExists){
 		try {
 			new File(folderPath).mkdirs();
 			File f = new File(folderPath+fileName);
@@ -70,7 +70,7 @@ public class ShapeFile {
 			if(!f.exists()){
 				HashMap<String, Serializable> params = new HashMap<String, Serializable>();
 				params.put("url", f.toURI().toURL());
-				params.put("create spatial index", Boolean.TRUE);
+				if(withSpatialIndex) params.put("create spatial index", Boolean.TRUE);
 				ShapefileDataStore sfds =  (ShapefileDataStore) new ShapefileDataStoreFactory().createNewDataStore( params );
 				sfds.createSchema(ft);
 			}
@@ -89,8 +89,8 @@ public class ShapeFile {
 	 * @param fileName
 	 * @param recreateOnExists
 	 */
-	public ShapeFile(String geomType, int epsgCode, String attributes, String folderPath, String fileName, boolean recreateOnExists){
-		this(getFeatureType(geomType, epsgCode, attributes), folderPath, fileName, recreateOnExists);
+	public ShapeFile(String geomType, int epsgCode, String attributes, String folderPath, String fileName, boolean withSpatialIndex, boolean recreateOnExists){
+		this(getFeatureType(geomType, epsgCode, attributes), folderPath, fileName, withSpatialIndex, recreateOnExists);
 	}
 
 
@@ -98,7 +98,7 @@ public class ShapeFile {
 		try {
 			HashMap<String, Object> params = new HashMap<String, Object>(); params.put("url", new File(path).toURI().toURL());
 			dataStore = (ShapefileDataStore) DataStoreFinder.getDataStore(params);
-			featureStore = (ContentFeatureStore) dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
+			featureStore = (SimpleFeatureStore) dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
 		} catch (Exception e) { e.printStackTrace(); }
 	}
 
@@ -184,10 +184,10 @@ public class ShapeFile {
 	}
 
 	//"NATUR_CODE = 'BAT'"
-	public ShapeFile filter(String cqlString, String outPath, String outFile, boolean override){ return filter(getFilterFromCQL(cqlString), outPath, outFile, override); }
-	public ShapeFile filter(Filter filter, String outPath, String outFile, boolean override){
+	public ShapeFile filter(String cqlString, String outPath, String outFile, boolean withSpatialIndex, boolean override){ return filter(getFilterFromCQL(cqlString), outPath, outFile, withSpatialIndex, override); }
+	public ShapeFile filter(Filter filter, String outPath, String outFile, boolean withSpatialIndex, boolean override){
 		int bufferSize = 500;
-		ShapeFile shpOut = new ShapeFile(getSchema(), outPath, outFile, override);
+		ShapeFile shpOut = new ShapeFile(getSchema(), outPath, outFile, withSpatialIndex, override);
 		FeatureIterator<SimpleFeature> it = getFeatures(filter);
 		DefaultFeatureCollection fs = new DefaultFeatureCollection("ZZZ"+this+Math.random(), getSchema());
 		while(it.hasNext()){
@@ -203,11 +203,12 @@ public class ShapeFile {
 		return shpOut;
 	}
 
-	public SimpleFeature buildFeature(Object[] data){
+	public SimpleFeature buildFeature(Object... data){
 		return SimpleFeatureBuilder.build(getSchema(), data, "fid."+this+((long)(Math.random()*9E18)) );
 	}
 
 
+	public ShapeFile add(Object... data) { return add(buildFeature(data)); }
 	public ShapeFile add(SimpleFeature f) {
 		DefaultFeatureCollection fs = new DefaultFeatureCollection(null, f.getFeatureType());
 		//new ListFeatureCollection(f.getFeatureType(), sfc)
@@ -469,17 +470,21 @@ public class ShapeFile {
 		//new ShapeFile("H:/geodata/merge.shp").filter(f, "H:/geodata/", "merge_BAT.shp");
 
 		//create shapefile with user defined schema
-		ShapeFile shp = new ShapeFile(SHPGeomType.POINT, 3035, "desc:String,age:Integer,qtity:Double,start:Date,exist:Boolean", "H:/desktop/", "test.shp", false);
+		/*ShapeFile shp = new ShapeFile(SHPGeomType.MULTIPOLYGON, 3035, "desc:String,age:Integer,qtity:Double,start:Date,exist:Boolean", "H:/desktop/", "test.shp", false);
 
 		//create feature
+		MultiPolygon mp = new GeometryFactory().createMultiPolygon(new Polygon[]{ new GeometryFactory().createPolygon(new Coordinate[]{ new Coordinate(30000,50000),new Coordinate(31000,51000),new Coordinate(31000,50000),new Coordinate(30000,50000) }) });
+		shp.add(mp,"description6",-57,16.14165359,"2016-10-18",false);
 		//SimpleFeature feature = shp.buildFeature(new Object[]{new GeometryFactory().createPoint(new Coordinate(4018000,2960000)),"description6",-57,16.14165359,"2016-10-18",false} );
-		//System.out.println(feature);
 		//System.out.println(feature.getID());
 		//SimpleFeature feature = SimpleFeatureBuilder.build( type, values, "fid" );
 		//SimpleFeature feature = SimpleFeatureBuilder.copy( original );
+		shp.add(new GeometryFactory().createMultiPolygon(new Polygon[]{ new GeometryFactory().createPolygon(new Coordinate[]{ new Coordinate(30000,50000),new Coordinate(31000,51000),new Coordinate(31000,50000),new Coordinate(30000,50000) }) }),"description6",-57,16.14165359,"2016-10-18",false);
+		shp.add(new GeometryFactory().createMultiPolygon(new Polygon[]{ new GeometryFactory().createPolygon(new Coordinate[]{ new Coordinate(30100,50000),new Coordinate(31180,53000),new Coordinate(31170,50100),new Coordinate(30100,50000) }) }),"description6",-57,16.14165359,"2016-10-18",false);
+		 */
 
-		//add features to the shapefile
-		//shp.add(feature);
+		//count
+		//System.out.println(new ShapeFile("H:/geodata/merge.shp").count());
 
 		//filter shapefile based on attributes
 		//shp.filter("age > 30", "H:/desktop/", "test_filter.shp");
@@ -513,8 +518,6 @@ public class ShapeFile {
 
 		//Object dbfReader = shp.dataStore.openDbfReader();
 		//DbaseFileHeader dbfHeader = dbfReader.getHeader();
-
-
 
 		System.out.println("end");
 	}

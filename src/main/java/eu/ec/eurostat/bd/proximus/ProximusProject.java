@@ -5,8 +5,14 @@ package eu.ec.eurostat.bd.proximus;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashSet;
 
 import org.geotools.data.shapefile.shp.ShapefileException;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.opengis.feature.simple.SimpleFeature;
+
+import eu.ec.eurostat.ShapeFile;
 
 /**
  * @author julien Gaffuri
@@ -75,51 +81,55 @@ public class ProximusProject {
 
 
 
-		//create output shp file based on input one
-		//new ShapeFile(new ShapeFile(BASE_PATH+"merge.shp").getSchema(), BASE_PATH, "merge_unique.shp");
-		//open out shapefile
-		//ShapeFile outshp = new ShapeFile(BASE_PATH + "merge_unique.shp").dispose();
+		//open/create out shapefile
+		ShapeFile outshp = new ShapeFile(ShapeFile.SHPGeomType.MULTIPOLYGON, 3035, "ID:String,CODE:String,HEIGHT:Double", BASE_PATH, "merge_unique.shp", false, false);
 
-
-		/*
 		//create and fill list of ids
 		HashSet<String> ids = new HashSet<String>();
 		FeatureIterator<SimpleFeature> it = outshp.getFeatures();
-		while (it.hasNext()) ids.add(it.next().getAttribute("OBJECTID").toString());
+		while (it.hasNext()) ids.add(it.next().getAttribute("ID").toString());
 		it.close();
 		System.out.println(ids.size());
+
+		//Flanders
+		//UIDN -> ID + FL
+		//TYPE
+		//1: hoofdgebouw - BUI
+		//2: bijgebouw - ANE
+		//3: gebouw afgezoomd met virtuele gevels - ANE
 
 		//go through files
 		for(String file : new String[]{ BASE_PATH+"merge.shp" }){
 			ShapeFile inshp = new ShapeFile(file).dispose();
 			//go through features
 			it = inshp.getFeatures();
-			//DefaultFeatureCollection sfc = new DefaultFeatureCollection(null, inshp.getSchema());
-			List<SimpleFeature> sfc = new ArrayList<SimpleFeature>();
+			DefaultFeatureCollection sfc = new DefaultFeatureCollection(null, outshp.getSchema());
 			while (it.hasNext()) {
 				SimpleFeature f = it.next();
 				String id = f.getAttribute("OBJECTID").toString();
 				if(ids.contains(id)) {
-					System.out.println(id + " already there.");
+					//System.out.println(id + " already there.");
 					continue;
 				}
 				ids.add(id);
-				sfc.add(f);
-				if(sfc.size()>=100){
-					System.out.println("Saving..."+sfc.size());
-					//ShapeFile.add(BASE_PATH + "merge_unique.shp", sfc);
-					outshp.add(new ListFeatureCollection(inshp.getSchema(), sfc));
+
+				SimpleFeature f_ = outshp.buildFeature(f.getDefaultGeometry(), id, f.getAttribute("NATUR_CODE"), -1);
+				sfc.add(f_);
+
+				if(sfc.size() >= 50000){
+					System.out.print("Saving "+sfc.size()+"...");
+					outshp.add(sfc);
 					sfc.clear();
+					System.out.println(" Done.");
 				}
 			}
 			it.close();
 
-			System.out.println("Saving...");
-			//ShapeFile.add(BASE_PATH + "merge_unique.shp", sfc);
-			outshp.add(new ListFeatureCollection(inshp.getSchema(), sfc));
+			System.out.print("Saving "+sfc.size()+"...");
+			outshp.add(sfc);
 			sfc.clear();
+			System.out.println(" Done.");
 		}
-		 */
 
 		System.out.println("End");
 	}
