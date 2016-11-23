@@ -116,7 +116,7 @@ public class ProximusProject {
 				SimpleFeature f_ = outshp.buildFeature(f.getDefaultGeometry(), id, f.getAttribute("NATUR_CODE"), -1);
 				sfc.add(f_);
 
-				if(sfc.size() >= 1000){
+				if(sfc.size() >= 50000){
 					System.out.print("Saving "+sfc.size()+"...");
 					outshp.add(sfc);
 					sfc.clear();
