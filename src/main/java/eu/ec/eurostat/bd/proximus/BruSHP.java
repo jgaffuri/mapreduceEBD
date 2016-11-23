@@ -8,20 +8,27 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import eu.ec.eurostat.ShapeFile;
+
 public class BruSHP {
 
 	public static void main(String[] args) {
 		System.out.println("Start");
 
-		String folder = "H:/geodata/BE_bruxelles_urbis/adm_3d/";
-		ArrayList<File> files = getFiles(new File(folder));
+		File[] folders = new File("H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/").listFiles();
 
-		for(File f : files){
-			String c = f.getName().replaceAll("UrbAdm3D_", "").replaceAll("_SHP.zip", "");
-			System.out.println(c);
-			unZip(f.getAbsolutePath(), folder+c);
+		//create new file
+		ShapeFile merge = new ShapeFile(new ShapeFile("H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/141167/UrbAdm_Bu_Ground_3D.shp").getSchema(), "H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/", "merge.shp", false, true);
+
+		System.out.println(folders.length);
+		for(File folder : folders){
+			if (folder.isDirectory()){
+				if(folder.listFiles().length==0) continue;
+				System.out.println(folder+"/UrbAdm_Bu_Ground_3D.shp");
+				merge.add(folder+"/UrbAdm_Bu_Ground_3D.shp");
+			} else
+				System.err.println(folder);
 		}
-
 
 		System.out.println("End");
 	}

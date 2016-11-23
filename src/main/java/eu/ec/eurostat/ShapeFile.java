@@ -233,6 +233,30 @@ public class ShapeFile {
 		}
 		return this;
 	}
+	public ShapeFile add(FeatureIterator<SimpleFeature> fit) { return add(50000,fit); }
+	public ShapeFile add(int bufferSize, FeatureIterator<SimpleFeature> fit) {
+		DefaultFeatureCollection fs = null;
+		while (fit.hasNext()) {
+			SimpleFeature f = fit.next();
+			if(fs==null) fs = new DefaultFeatureCollection(null, f.getFeatureType());
+			fs.add(f);
+			if(fs.size() >= bufferSize){
+				add(fs);
+				fs.clear();
+			}
+		}
+		if(fs != null) add(fs);
+		return this;
+	}
+	public ShapeFile add(String... shpPaths){ return add(50000, shpPaths); }
+	public ShapeFile add(int bufferSize, String... shpPaths){
+		for(String shpPath : shpPaths){
+			FeatureIterator<SimpleFeature> fit = new ShapeFile(shpPath).getFeatures();
+			this.add(bufferSize, fit);
+			fit.close();
+		}
+		return this;
+	}
 
 
 	public ShapeFile remove(String cqlString){ return remove(getFilterFromCQL(cqlString)); }
@@ -326,8 +350,6 @@ public class ShapeFile {
 		try { return CQL.toFilter(cqlString); } catch (CQLException e) { e.printStackTrace(); }
 		return null;
 	}
-
-
 
 
 	/*
