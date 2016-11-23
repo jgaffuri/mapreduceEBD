@@ -251,7 +251,7 @@ public class ShapeFile {
 	public ShapeFile add(String... shpPaths){ return add(50000, shpPaths); }
 	public ShapeFile add(int bufferSize, String... shpPaths){
 		for(String shpPath : shpPaths){
-			FeatureIterator<SimpleFeature> fit = new ShapeFile(shpPath).getFeatures();
+			FeatureIterator<SimpleFeature> fit = new ShapeFile(shpPath).dispose().getFeatures();
 			this.add(bufferSize, fit);
 			fit.close();
 		}
