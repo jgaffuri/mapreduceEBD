@@ -217,23 +217,25 @@ public class ShapeFile {
 	}
 	public ShapeFile add(SimpleFeatureCollection fs) {
 		try {
+			System.out.println("aaaaa");
 			Transaction tr = new DefaultTransaction("create");
+			System.out.println("bbbbb");
 			featureStore.setTransaction(tr);
+			System.out.println("ccccc");
 			try {
+				System.out.println("ddddd");
 				featureStore.addFeatures(fs);
+				System.out.println("eeeeee");
 				tr.commit();
+				System.out.println("fffff");
 			} catch (Exception problem) {
 				problem.printStackTrace();
 				tr.rollback();
-			} finally {
-				tr.close();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			} finally { tr.close(); }
+		} catch (Exception e) { e.printStackTrace(); }
 		return this;
 	}
-	public ShapeFile add(FeatureIterator<SimpleFeature> fit) { return add(50000,fit); }
+	public ShapeFile add(FeatureIterator<SimpleFeature> fit) { return add(100,fit); }
 	public ShapeFile add(int bufferSize, FeatureIterator<SimpleFeature> fit) {
 		DefaultFeatureCollection fs = null;
 		while (fit.hasNext()) {
@@ -248,7 +250,7 @@ public class ShapeFile {
 		if(fs != null) add(fs);
 		return this;
 	}
-	public ShapeFile add(String... shpPaths){ return add(50000, shpPaths); }
+	public ShapeFile add(String... shpPaths){ return add(100, shpPaths); }
 	public ShapeFile add(int bufferSize, String... shpPaths){
 		for(String shpPath : shpPaths){
 			FeatureIterator<SimpleFeature> fit = new ShapeFile(shpPath).dispose().getFeatures();

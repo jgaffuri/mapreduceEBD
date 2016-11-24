@@ -13,7 +13,7 @@ public class BruSHP {
 		File[] folders = new File("H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/").listFiles();
 
 		//create new file
-		ShapeFile merge = new ShapeFile(new ShapeFile("H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/141167/UrbAdm_Bu_Ground_3D.shp").getSchema(), "H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/", "merge.shp", false, true);
+		ShapeFile merge = new ShapeFile(new ShapeFile("H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/merge.shp").getSchema(), "H:/geodata/BE_bruxelles_urbis/adm_3d/unzipped/","merge3.shp", false, false);
 
 		System.out.println(folders.length);
 		for(File folder : folders){
@@ -21,8 +21,7 @@ public class BruSHP {
 				if(folder.listFiles().length==0) continue;
 				System.out.println(folder+"/UrbAdm_Bu_Ground_3D.shp");
 				merge.add(folder+"/UrbAdm_Bu_Ground_3D.shp");
-			} else
-				System.err.println(folder);
+			} //else System.err.println(folder);
 		}
 
 		System.out.println("End");
