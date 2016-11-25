@@ -19,7 +19,7 @@ import eu.ec.estat.java4eurostat.base.StatsHypercube;
 import eu.ec.estat.java4eurostat.base.StatsIndex;
 import eu.ec.estat.java4eurostat.io.CSV;
 import eu.ec.estat.java4eurostat.io.DicUtil;
-import eu.ec.eurostat.ShapeFile;
+import eu.ec.eurostat.io.ShapeFile;
 
 /**
  * @author julien Gaffuri

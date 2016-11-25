@@ -12,7 +12,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 
-import eu.ec.eurostat.ShapeFile;
+import eu.ec.eurostat.io.ShapeFile;
 
 /**
  * @author julien Gaffuri

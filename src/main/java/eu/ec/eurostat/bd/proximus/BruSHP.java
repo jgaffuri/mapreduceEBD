@@ -3,7 +3,7 @@ package eu.ec.eurostat.bd.proximus;
 import java.io.File;
 import java.util.ArrayList;
 
-import eu.ec.eurostat.ShapeFile;
+import eu.ec.eurostat.io.ShapeFile;
 
 public class BruSHP {
 

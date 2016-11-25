@@ -18,7 +18,7 @@ import org.opengis.filter.FilterFactory2;
 import com.vividsolutions.jts.geom.Geometry;
 
 import eu.ec.estat.java4eurostat.io.DicUtil;
-import eu.ec.eurostat.ShapeFile;
+import eu.ec.eurostat.io.ShapeFile;
 
 /**
  * @author julien Gaffuri
