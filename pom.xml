@@ -107,19 +107,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>org.apache.hadoop</groupId> -->
-		<!-- <artifactId>hadoop-mapreduce-client-common</artifactId> -->
-		<!-- <version>${hadoop.version}</version> -->
-		<!-- <scope>provided</scope> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.apache.hadoop</groupId> -->
-		<!-- <artifactId>hadoop-common</artifactId> -->
-		<!-- <version>${hadoop.version}</version> -->
-		<!-- <scope>provided</scope> -->
-		<!-- </dependency> -->
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -157,6 +144,12 @@
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-epsg-extension</artifactId>
 			<version>${geotools.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.4.1212.jre7</version>
 		</dependency>
 
 		<dependency>
