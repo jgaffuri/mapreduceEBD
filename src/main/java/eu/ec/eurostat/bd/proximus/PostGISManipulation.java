@@ -17,6 +17,7 @@ import eu.ec.eurostat.io.postgis.PGUtil;
 public class PostGISManipulation {
 
 	public static void main(String[] args) throws Exception {
+		System.out.println("Start");
 
 		PGConnection pgConn = new PGConnection(Config.pg_db, Config.pg_host, Config.pg_port, Config.pg_user, Config.pg_pw);
 		Connection c = pgConn.getConnection();
@@ -27,6 +28,16 @@ public class PostGISManipulation {
 					//+ " - SRID:" + PGUtil.getSRID(c, table, "geom")
 					);
 
+		//TODO import remaining wa shapfiles (liege and hainault)
+		//TODO remove duplicates wa
+		//TODO import buildings bruxelles
+		//TODO harmonise sheamses
+		//TODO merge tables
+		//TODO handle intersecting buildings
+		//TODO adapt script
+		//TODO run script
+		//TODO write report
+
 		/*
 		for(String table : tables){
 			System.out.println(table);
@@ -34,6 +45,8 @@ public class PostGISManipulation {
 		}
 		 */
 		c.close();
+
+		System.out.println("End");
 	}
 
 }
