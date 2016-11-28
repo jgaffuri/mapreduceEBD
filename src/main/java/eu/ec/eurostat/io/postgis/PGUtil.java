@@ -3,6 +3,7 @@ package eu.ec.eurostat.io.postgis;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -47,6 +48,21 @@ public class PGUtil {
 		return s;
 	}
 
+	//get all values of attribute
+	public static ArrayList<String> getValues(Connection c, String tableName, String columnName, boolean distinct){ return getValues(c, tableName, columnName, distinct, null); }
+	public static ArrayList<String> getValues(Connection c, String tableName, String columnName, boolean distinct, String where){
+		ArrayList<String> col = new ArrayList<String>();
+		try {
+			Statement st = c.createStatement();
+			try {
+				ResultSet res = st.executeQuery("SELECT "+(distinct?"DISTINCT ":"")+columnName+" FROM "+tableName+(where!=null?" WHERE "+where:"")+";");
+				while (res.next()) col.add(res.getObject(1).toString());
+			} finally { st.close(); }
+		} catch (Exception e) { e.printStackTrace(); }
+		return col;
+	}
+
+
 	public static boolean executeStatement(Connection c, String sqlStatment){
 		boolean b = false;
 		try {
@@ -62,13 +78,12 @@ public class PGUtil {
 		return executeStatement(c, "ALTER TABLE "+tableName+" ADD COLUMN "+columnName+" "+columnType+";");
 	}
 
+	public static boolean createIndex(Connection c, String tabName, String columnName){ return createIndex(c, tabName, columnName, "INDEX_"+tabName+"_"+columnName); }
 	public static boolean createIndex(Connection c, String tabName, String columnName, String indexName){
 		return executeStatement(c, "CREATE INDEX "+indexName+" ON "+tabName+" ("+columnName+" ASC NULLS LAST);");
 	}
 
-	public static boolean createSpatialIndex(Connection c, String tabName){
-		return createSpatialIndex(c, tabName, "geom", "SPATIAL_INDEX_"+tabName+"_geom");
-	}
+	public static boolean createSpatialIndex(Connection c, String tabName){ return createSpatialIndex(c, tabName, "geom", "SPATIAL_INDEX_"+tabName+"_geom"); }
 	public static boolean createSpatialIndex(Connection c, String tabName, String geomColumnName, String indexName){
 		return executeStatement(c, "CREATE INDEX "+indexName+" ON "+tabName+" USING GIST ("+geomColumnName+");");
 	}
