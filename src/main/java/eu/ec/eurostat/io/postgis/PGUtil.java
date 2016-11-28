@@ -73,6 +73,19 @@ public class PGUtil {
 		return b;
 	}
 
+	public static String getGeometryText(Connection c, String tableName, String id) { return getGeometryText(c, tableName, id, "gid", "geom"); }
+	public static String getGeometryText(Connection c, String tableName, String id, String idColumn, String geomColumn) {
+		String g = null;
+		try {
+			Statement st = c.createStatement();
+			try {
+				ResultSet res = st.executeQuery("SELECT ST_AsText("+geomColumn+") FROM "+tableName+" WHERE "+idColumn+"='"+id+"';");
+				if(res.next()) g = res.getString(1);
+			} finally { st.close(); }
+		} catch (Exception e) { e.printStackTrace(); }
+		return g;
+	}
+
 	//type: integer,text,etc.
 	public static boolean addColumn(Connection c, String tableName, String columnName, String columnType){
 		return executeStatement(c, "ALTER TABLE "+tableName+" ADD COLUMN "+columnName+" "+columnType+";");

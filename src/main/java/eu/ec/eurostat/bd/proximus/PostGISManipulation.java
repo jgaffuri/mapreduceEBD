@@ -4,7 +4,13 @@
 package eu.ec.eurostat.bd.proximus;
 
 import java.sql.Connection;
-import java.util.Collection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 import eu.ec.eurostat.bd.Config;
 import eu.ec.eurostat.io.postgis.PGConnection;
@@ -22,11 +28,12 @@ public class PostGISManipulation {
 		PGConnection pgConn = new PGConnection(Config.pg_db, Config.pg_host, Config.pg_port, Config.pg_user, Config.pg_pw);
 		Connection c = pgConn.getConnection();
 
+		/*
 		Collection<String> tables = PGUtil.getTableNames(c);
 		for(String table : tables)
 			System.out.println(table+" - "+PGUtil.getTableSize(c, table) + " rows"
 					//+ " - SRID:" + PGUtil.getSRID(c, table, "geom")
-					);
+					);*/
 
 		//remove duplicates in wa
 		//removeWallonyDuplicates(c);
@@ -34,7 +41,8 @@ public class PostGISManipulation {
 		//add spatial index
 		//if (PGUtil.createSpatialIndex(c, "bu_be")) System.out.println("Spatial index created"); else System.err.println("Spatial index NOT created");
 
-		//TODO handle intersecting buildings
+		//handle intersecting buildings
+		handleIntersectingBuildings(c);
 		//TODO test on intersecting buildings
 		//TODO export shp or adapt script
 		//TODO run
@@ -52,11 +60,65 @@ public class PostGISManipulation {
 	}
 
 	public static void handleIntersectingBuildings(Connection c){
-		//should be the same
+		/*/should be the same
 		System.out.println(PGUtil.getValues(c, "bu_be", "gid", false).size());
-		System.out.println(PGUtil.getValues(c, "bu_be", "gid", true).size());
+		System.out.println(PGUtil.getValues(c, "bu_be", "gid", true).size());*/
 
-		//ArrayList<String> gids = PGUtil.getValues(c, "bu_be", "gid", false);
+		WKTReader wkt = new WKTReader();
+
+		ArrayList<String> gids = PGUtil.getValues(c, "bu_be", "gid", false);
+		System.out.println(gids.size());
+		for(String gid1 : gids){
+			String geomS1 = null, geomS1_2D = null;
+			try {
+				Statement st = c.createStatement();
+				try {
+					ResultSet res = st.executeQuery("SELECT geom,ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid='"+gid1+"';");
+					res.next();
+					geomS1 = res.getString(1);
+					geomS1_2D = res.getString(2);
+				} finally { st.close(); }
+			} catch (Exception e) { e.printStackTrace(); }
+			System.out.println(geomS1_2D);
+			Geometry geom1 = null;
+			try { geom1 = wkt.read(geomS1_2D); } catch (ParseException e1) {
+				System.out.println("Could not parse "+geomS1_2D);
+				e1.printStackTrace();
+			}
+			try {
+				Statement st = c.createStatement();
+				try {
+					//get all buildings intersecting geom1
+					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid!="+gid1+" AND ST_Intersects(geom,"+geomS1+")");
+					while (res.next()) {
+						int gid2 = res.getInt(1);
+						String geomS2_2D = res.getString(2);
+						try {
+							Geometry geom2 = wkt.read(geomS2_2D);
+							double interArea = geom1.intersection(geom2).getArea();
+							if(interArea<30) continue;
+							double a1 = geom1.getArea(), r1 = interArea/a1, a2 = geom2.getArea(), r2 = interArea/a2;
+
+							if(r2>r1 && r2>0.7){
+								//delete gid2
+								System.out.println("delete 2 "+gid2);
+								//PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid2+"'");
+								continue;
+							}
+							if(r1>r2 && r1>0.7){
+								//delete gid1
+								System.out.println("delete 1 "+gid1);
+								//PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid1+"'");
+								continue;
+							}
+						} catch (ParseException e1) {
+							System.out.println("Could not parse "+geomS2_2D);
+							e1.printStackTrace();
+						}
+					}
+				} finally { st.close(); }
+			} catch (Exception e) { e.printStackTrace(); }
+		}
 	}
 
 	public static void removeWallonyDuplicates(Connection c){
