@@ -20,7 +20,7 @@ public class BruSHP {
 		for(File f : files){
 			String c = f.getName().replaceAll("UrbAdm3D_", "").replaceAll("_SHP.zip", "");
 			//System.out.println(c);
-			System.out.println("shp2pgsql -a -s 31370:3035 workspace_postgis/bru/"+c+"/UrbAdm_Bu_Ground_3D.shp BU_BE_BRU | psql -h s-estat-bgdnode-05 -d postgisdb -U postgis");
+			System.out.println("shp2pgsql -a -s 31370:3035 workspace_postgis/bru/"+c+"/UrbAdm_Bu_Ground_3D.shp BU_BE_BRU");
 			//unZip(f.getAbsolutePath(), folder+"unzipped/"+c);
 		}
 

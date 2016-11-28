@@ -4,7 +4,6 @@
 package eu.ec.eurostat.bd.proximus;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import eu.ec.eurostat.bd.Config;
@@ -30,15 +29,15 @@ public class PostGISManipulation {
 					);
 
 		//remove duplicates in wa
-		removeWallonyDuplicates(c);
+		//removeWallonyDuplicates(c);
 
-		//TODO import buildings bruxelles
-		//TODO harmonise shemas
-		//TODO merge tables
+		//add spatial index
+		//if (PGUtil.createSpatialIndex(c, "bu_be")) System.out.println("Spatial index created"); else System.err.println("Spatial index NOT created");
+
 		//TODO handle intersecting buildings
 		//TODO test on intersecting buildings
-		//TODO adapt script
-		//TODO run script
+		//TODO export shp or adapt script
+		//TODO run
 		//TODO write report
 
 		/*
@@ -52,12 +51,17 @@ public class PostGISManipulation {
 		System.out.println("End");
 	}
 
-	public static void removeWallonyDuplicates(Connection c){
-		//initial number: 7693467
-		//                7415659
-		//final number should be: 3450143
+	public static void handleIntersectingBuildings(Connection c){
+		//should be the same
+		System.out.println(PGUtil.getValues(c, "bu_be", "gid", false).size());
+		System.out.println(PGUtil.getValues(c, "bu_be", "gid", true).size());
 
-		/*//check ids
+		//ArrayList<String> gids = PGUtil.getValues(c, "bu_be", "gid", false);
+	}
+
+	public static void removeWallonyDuplicates(Connection c){
+
+		/*/check ids
 		System.out.println(PGUtil.getValues(c, "bu_be_wa", "objectid", true).size());
 		System.out.println(PGUtil.getValues(c, "bu_be_wa", "objectid", false).size());
 		System.out.println(PGUtil.getValues(c, "bu_be_wa", "gid", true).size());
@@ -69,6 +73,7 @@ public class PostGISManipulation {
 		//System.out.println( PGUtil.createIndex(c, "bu_be_wa", "objectid") );
 		//System.out.println( PGUtil.createIndex(c, "bu_be_wa", "gid") ); useless: there is already an index for this column
 
+		/*
 		ArrayList<String> objectids = PGUtil.getValues(c, "bu_be_wa", "objectid", true);
 		System.out.println(objectids.size());
 		for(String objectid : objectids){
@@ -79,7 +84,7 @@ public class PostGISManipulation {
 			//System.out.println(gids);
 			gids.remove(0); //to ensure one is kept
 			for(String gid : gids) PGUtil.executeStatement(c, "DELETE FROM bu_be_wa WHERE gid='"+gid+"'");
-		}
+		}*/
 	}
 
 }
