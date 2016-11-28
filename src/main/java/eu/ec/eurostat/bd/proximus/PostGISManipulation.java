@@ -43,7 +43,7 @@ public class PostGISManipulation {
 
 		//handle intersecting buildings
 		handleIntersectingBuildings(c);
-		//TODO test on intersecting buildings
+
 		//TODO export shp or adapt script
 		//TODO run
 		//TODO write report
@@ -69,50 +69,49 @@ public class PostGISManipulation {
 		ArrayList<String> gids = PGUtil.getValues(c, "bu_be", "gid", false);
 		System.out.println(gids.size());
 		for(String gid1 : gids){
-			String geomS1 = null, geomS1_2D = null;
+			String geomS1 = null;
 			try {
 				Statement st = c.createStatement();
 				try {
-					ResultSet res = st.executeQuery("SELECT geom,ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid='"+gid1+"';");
+					ResultSet res = st.executeQuery("SELECT ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid='"+gid1+"';");
 					res.next();
 					geomS1 = res.getString(1);
-					geomS1_2D = res.getString(2);
 				} finally { st.close(); }
 			} catch (Exception e) { e.printStackTrace(); }
-			System.out.println(geomS1_2D);
 			Geometry geom1 = null;
-			try { geom1 = wkt.read(geomS1_2D); } catch (ParseException e1) {
-				System.out.println("Could not parse "+geomS1_2D);
-				e1.printStackTrace();
+			try { geom1 = wkt.read(geomS1); } catch (ParseException e) {
+				System.out.println("Could not parse "+geomS1);
+				e.printStackTrace();
 			}
+			//System.out.println(gid1 + " - " + geom1);
 			try {
 				Statement st = c.createStatement();
 				try {
 					//get all buildings intersecting geom1
-					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid!="+gid1+" AND ST_Intersects(geom,"+geomS1+")");
+					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid!="+gid1+" AND ST_Intersects(geom,ST_GeomFromText('"+geom1+"',3035))");
 					while (res.next()) {
 						int gid2 = res.getInt(1);
-						String geomS2_2D = res.getString(2);
+						String geomS2 = res.getString(2);
 						try {
-							Geometry geom2 = wkt.read(geomS2_2D);
+							Geometry geom2 = wkt.read(geomS2);
 							double interArea = geom1.intersection(geom2).getArea();
+
 							if(interArea<30) continue;
 							double a1 = geom1.getArea(), r1 = interArea/a1, a2 = geom2.getArea(), r2 = interArea/a2;
-
 							if(r2>r1 && r2>0.7){
 								//delete gid2
 								System.out.println("delete 2 "+gid2);
-								//PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid2+"'");
+								PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid2+"'");
 								continue;
 							}
 							if(r1>r2 && r1>0.7){
 								//delete gid1
 								System.out.println("delete 1 "+gid1);
-								//PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid1+"'");
+								PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid1+"'");
 								continue;
 							}
 						} catch (ParseException e1) {
-							System.out.println("Could not parse "+geomS2_2D);
+							System.out.println("Could not parse "+geomS2);
 							e1.printStackTrace();
 						}
 					}
