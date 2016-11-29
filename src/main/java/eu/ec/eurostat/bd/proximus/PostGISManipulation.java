@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -40,11 +41,13 @@ public class PostGISManipulation {
 
 		//add spatial index
 		//if (PGUtil.createSpatialIndex(c, "bu_be")) System.out.println("Spatial index created"); else System.err.println("Spatial index NOT created");
+		//PGUtil.createIndex(c,"bu_be_housing","gid");
 
 		//handle intersecting buildings
-		handleIntersectingBuildings(c);
+		handleIntersectingBuildings(c, "bu_be_housing");
+		//handleIntersectingBuildings(c, "bu_be");
 
-		//TODO export shp or adapt script
+		//TODO export shp
 		//TODO run
 		//TODO write report
 
@@ -59,55 +62,67 @@ public class PostGISManipulation {
 		System.out.println("End");
 	}
 
-	public static void handleIntersectingBuildings(Connection c){
+	public static void handleIntersectingBuildings(Connection c, String tableName){
+		//9479080
 		/*/should be the same
-		System.out.println(PGUtil.getValues(c, "bu_be", "gid", false).size());
-		System.out.println(PGUtil.getValues(c, "bu_be", "gid", true).size());*/
+		System.out.println(PGUtil.getValues(c, tableName, "gid", false).size());
+		System.out.println(PGUtil.getValues(c, tableName, "gid", true).size());*/
 
 		WKTReader wkt = new WKTReader();
 
-		ArrayList<String> gids = PGUtil.getValues(c, "bu_be", "gid", false);
-		System.out.println(gids.size());
+		//get all ids
+		ArrayList<String> gids = PGUtil.getValues(c, tableName, "gid", false);
+		Collections.shuffle(gids);
+		int nb = gids.size();
+		System.out.println(tableName + ": " + nb);
+
+		int i=1;
 		for(String gid1 : gids){
+			i++;
 			String geomS1 = null;
 			try {
 				Statement st = c.createStatement();
 				try {
-					ResultSet res = st.executeQuery("SELECT ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid='"+gid1+"';");
-					res.next();
-					geomS1 = res.getString(1);
+					ResultSet res = st.executeQuery("SELECT ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE gid='"+gid1+"';");
+					if(res.next()) geomS1 = res.getString(1);
 				} finally { st.close(); }
 			} catch (Exception e) { e.printStackTrace(); }
+			if(geomS1 == null) continue;
 			Geometry geom1 = null;
 			try { geom1 = wkt.read(geomS1); } catch (ParseException e) {
 				System.out.println("Could not parse "+geomS1);
 				e.printStackTrace();
 			}
+			if(geom1 == null) continue;
 			//System.out.println(gid1 + " - " + geom1);
 			try {
 				Statement st = c.createStatement();
 				try {
 					//get all buildings intersecting geom1
-					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM bu_be WHERE gid!="+gid1+" AND ST_Intersects(geom,ST_GeomFromText('"+geom1+"',3035))");
+					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE gid!="+gid1+" AND ST_Intersects(geom,ST_GeomFromText('"+geom1+"',3035))");
 					while (res.next()) {
 						int gid2 = res.getInt(1);
 						String geomS2 = res.getString(2);
 						try {
+							if(geomS2 == null) continue;
 							Geometry geom2 = wkt.read(geomS2);
+							if(geom2 == null) continue;
 							double interArea = geom1.intersection(geom2).getArea();
 
-							if(interArea<30) continue;
-							double a1 = geom1.getArea(), r1 = interArea/a1, a2 = geom2.getArea(), r2 = interArea/a2;
-							if(r2>r1 && r2>0.7){
+							//if(interArea<30) continue;
+
+							double a1 = geom1.getArea(), r1 = interArea/a1;
+							double a2 = geom2.getArea(), r2 = interArea/a2;
+							if(r2>r1 && r2>0.75){
 								//delete gid2
-								System.out.println("delete 2 "+gid2);
-								PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid2+"'");
+								System.out.println("delete 2 "+gid2+"   "+((Math.round(10000.0*i/(nb*1.0)))*0.01)+"% done.");
+								PGUtil.executeStatement(c, "DELETE FROM "+tableName+" WHERE gid='"+gid2+"'");
 								continue;
 							}
-							if(r1>r2 && r1>0.7){
+							if(r1>r2 && r1>0.75){
 								//delete gid1
-								System.out.println("delete 1 "+gid1);
-								PGUtil.executeStatement(c, "DELETE FROM bu_be WHERE gid='"+gid1+"'");
+								System.out.println("delete 1 "+gid1+"   "+((Math.round(10000.0*i/(nb*1.0)))*0.01)+"% done.");
+								PGUtil.executeStatement(c, "DELETE FROM "+tableName+" WHERE gid='"+gid1+"'");
 								continue;
 							}
 						} catch (ParseException e1) {
