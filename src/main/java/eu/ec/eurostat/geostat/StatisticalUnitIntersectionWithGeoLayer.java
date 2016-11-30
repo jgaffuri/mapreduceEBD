@@ -156,7 +156,12 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 					//get stat unit geometry
 					Geometry statUnitGeom = (Geometry) stat.getDefaultGeometryProperty().getValue();
-					if(!geoGeom.intersects(statUnitGeom)) continue;
+					try {
+						if(!geoGeom.intersects(statUnitGeom)) continue;
+					} catch (TopologyException e) {
+						System.err.println("Topology error.");
+						continue;
+					}
 
 					//get stat unit value
 					String statValue = statUnitValue.get(statId);
@@ -167,7 +172,11 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 					if(statGeoTot == null || Double.parseDouble(statGeoTot) == 0) continue;
 
 					nbStat++;
-					geoStatValue += geoGeom.intersection(statUnitGeom).getArea() / Double.parseDouble(statGeoTot) * Double.parseDouble(statValue);
+					try {
+						geoStatValue += geoGeom.intersection(statUnitGeom).getArea() / Double.parseDouble(statGeoTot) * Double.parseDouble(statValue);
+					} catch (TopologyException e) {
+						System.err.println("Topology error.");
+					}
 				}
 				itStat.close();
 

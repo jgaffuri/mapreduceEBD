@@ -124,10 +124,10 @@ public class PostGISManipulation {
 							}
 						} catch (ParseException e1) {
 							System.out.println("Could not parse "+geomS2);
-							e1.printStackTrace();
+							//e1.printStackTrace();
 						} catch (TopologyException e1) {
 							System.out.println("Topology problem");
-							e1.printStackTrace();
+							//e1.printStackTrace();
 						}
 					}
 				} finally { st.close(); }
