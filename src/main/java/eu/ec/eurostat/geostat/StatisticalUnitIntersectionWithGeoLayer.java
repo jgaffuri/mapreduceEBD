@@ -16,6 +16,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.TopologyException;
 
 import eu.ec.estat.java4eurostat.io.DicUtil;
 import eu.ec.eurostat.io.ShapeFile;
@@ -72,11 +73,15 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 					Geometry geoGeom = (Geometry) geo.getDefaultGeometryProperty().getValue();
 					if(!geoGeom.intersects(StatUnitGeom)) continue;
 
-					Geometry inter = geoGeom.intersection(StatUnitGeom);
-
 					nbGeo++;
-					totalArea += inter.getArea();
-					totalLength += inter.getLength();
+
+					try {
+						Geometry inter = geoGeom.intersection(StatUnitGeom);
+						totalArea += inter.getArea();
+						totalLength += inter.getLength();
+					} catch (TopologyException e) {
+						System.err.println("Topology error for intersection computation");
+					}
 				}
 				itGeo.close();
 

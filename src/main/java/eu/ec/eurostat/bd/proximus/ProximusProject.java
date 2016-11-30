@@ -12,6 +12,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 
+import eu.ec.eurostat.geostat.StatisticalUnitIntersectionWithGeoLayer;
 import eu.ec.eurostat.io.ShapeFile;
 
 /**
@@ -29,7 +30,7 @@ public class ProximusProject {
 	public static String GEOSTAT_GRID_PATH = BASE_PATH_ + "grid.shp";
 	public static String PROXIMUS_VORONOI = BASE_PATH_ + "voronoi.shp";
 	public static String PROXIMUS_VORONOI_POP_PATH = BASE_PATH_ + "voronoi_data.csv";
-	public static String BUILDINGS_SHP_PATH = BASE_PATH_ + "buildings_wal_lux.shp"; //
+	public static String BUILDINGS_SHP_PATH = BASE_PATH_ + "bu_be_housing.shp"; //
 
 	public static String gridBuildingStats = BASE_PATH_ + "building_intersection_with_grid.csv";
 	public static String buildingDensityFromGrid = BASE_PATH_ + "building_pop_from_grid.csv";
@@ -53,9 +54,9 @@ public class ProximusProject {
 		//TODO do it for all municipalities in europe
 
 		//assess the building quantity for each grid cell
-		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStats(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, gridBuildingStats);
+		//StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, gridBuildingStats);
 		//assess the building quantity for each voronoi cell
-		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStats(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoiBuildingStats);
+		StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoiBuildingStats);
 
 		//assess the building density based on grid pop
 		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStatValueFromStatUnitValue(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, gridBuildingStats, buildingDensityFromGrid);

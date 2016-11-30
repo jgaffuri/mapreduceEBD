@@ -44,12 +44,8 @@ public class PostGISManipulation {
 		//PGUtil.createIndex(c,"bu_be_housing","gid");
 
 		//handle intersecting buildings
-		handleIntersectingBuildings(c, "bu_be_housing");
+		//handleIntersectingBuildings(c, "bu_be_housing");
 		handleIntersectingBuildings(c, "bu_be");
-
-		//TODO export shp
-		//TODO run
-		//TODO write report
 
 		/*
 		for(String table : tables){
