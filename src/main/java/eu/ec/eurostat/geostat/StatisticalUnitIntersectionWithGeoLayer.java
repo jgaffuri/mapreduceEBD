@@ -68,14 +68,13 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				//compute stat on geo: total area/volume, number, building size distribution
 				int nbGeo=0; double totalArea=0, totalLength=0;
 				while (itGeo.hasNext()) {
-					SimpleFeature geo = itGeo.next();
-
-					Geometry geoGeom = (Geometry) geo.getDefaultGeometryProperty().getValue();
-					if(!geoGeom.intersects(StatUnitGeom)) continue;
-
-					nbGeo++;
-
 					try {
+						SimpleFeature geo = itGeo.next();
+						nbGeo++;
+
+						Geometry geoGeom = (Geometry) geo.getDefaultGeometryProperty().getValue();
+						if(!geoGeom.intersects(StatUnitGeom)) continue;
+
 						Geometry inter = geoGeom.intersection(StatUnitGeom);
 						totalArea += inter.getArea();
 						totalLength += inter.getLength();

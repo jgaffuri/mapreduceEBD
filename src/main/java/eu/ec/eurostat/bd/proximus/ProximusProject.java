@@ -5,15 +5,10 @@ package eu.ec.eurostat.bd.proximus;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.HashSet;
 
 import org.geotools.data.shapefile.shp.ShapefileException;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.opengis.feature.simple.SimpleFeature;
 
 import eu.ec.eurostat.geostat.StatisticalUnitIntersectionWithGeoLayer;
-import eu.ec.eurostat.io.ShapeFile;
 
 /**
  * @author julien Gaffuri
@@ -55,82 +50,24 @@ public class ProximusProject {
 
 		//assess the building quantity for each grid cell
 		//StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, gridBuildingStats);
-		//assess the building quantity for each voronoi cell
-		StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoiBuildingStats);
+		//STEP 1-2. assess the building quantity for each voronoi cell
+		//StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoiBuildingStats);
 
 		//assess the building density based on grid pop
 		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStatValueFromStatUnitValue(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, gridBuildingStats, buildingDensityFromGrid);
-		//assess the building density based on voronoi pop
-		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStatValueFromStatUnitValue(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", PROXIMUS_VORONOI_POP_PATH, voronoiBuildingStats, buildingDensityFromVoronoi);
+		//STEP 3. assess the building density based on voronoi pop
+		StatisticalUnitIntersectionWithGeoLayer.allocateGeoStatsFromStatisticalUnitsToGeo(BUILDINGS_SHP_PATH, "objectid", PROXIMUS_VORONOI, "voronoi_id", PROXIMUS_VORONOI_POP_PATH, voronoiBuildingStats, buildingDensityFromVoronoi);
 
 		//compare building densities - see discrepencies and possibly enrich model to reduce it (further)
-		//TODO: exclude activity building - include only habitation buildings
-		//TODO take into account building heights
-		//TODO integrate all building shp into one
 
 		//aggregate building grid/population to grid
 		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromGrid, BASE_PATH_ + "grid_pop_from_building_pop_from_grid.csv");
 		//compare with initial grid population - should be the same -> ok!
 
-		//aggregate building voronoi/population to grid
-		//StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_voronoi.csv");
+		//STEP 4. aggregate building voronoi/population to grid
+		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "objectid", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_voronoi.csv");
 		//compare with proximus computes grid population
 		//compare with initial grid population
-
-		//TODO compute stats for other geo themes for voronoi cell type caracterisation refinment (housing, activity, commute)
-
-
-
-
-		//open/create out shapefile
-		ShapeFile outshp = new ShapeFile(ShapeFile.SHPGeomType.MULTIPOLYGON, 3035, "ID:String,CODE:String,HEIGHT:Double", BASE_PATH, "merge_unique.shp", false, false);
-
-		//create and fill list of ids
-		HashSet<String> ids = new HashSet<String>();
-		FeatureIterator<SimpleFeature> it = outshp.getFeatures();
-		while (it.hasNext()) ids.add(it.next().getAttribute("ID").toString());
-		it.close();
-		System.out.println(ids.size());
-
-		//Flanders
-		//UIDN -> ID + FL
-		//TYPE
-		//1: hoofdgebouw - BUI
-		//2: bijgebouw - ANE
-		//3: gebouw afgezoomd met virtuele gevels - ANE
-
-		//go through files
-		for(String file : new String[]{ BASE_PATH+"merge.shp" }){
-			ShapeFile inshp = new ShapeFile(file).dispose();
-			//go through features
-			it = inshp.getFeatures();
-			DefaultFeatureCollection sfc = new DefaultFeatureCollection(null, outshp.getSchema());
-			while (it.hasNext()) {
-				SimpleFeature f = it.next();
-				String id = f.getAttribute("OBJECTID").toString();
-				if(ids.contains(id)) {
-					//System.out.println(id + " already there.");
-					continue;
-				}
-				ids.add(id);
-
-				SimpleFeature f_ = outshp.buildFeature(f.getDefaultGeometry(), id, f.getAttribute("NATUR_CODE"), -1);
-				sfc.add(f_);
-
-				if(sfc.size() >= 1000000){
-					System.out.print("Saving "+sfc.size()+"...");
-					outshp.add(sfc);
-					sfc.clear();
-					System.out.println(" Done.");
-				}
-			}
-			it.close();
-
-			System.out.print("Saving "+sfc.size()+"...");
-			outshp.add(sfc);
-			sfc.clear();
-			System.out.println(" Done.");
-		}
 
 		System.out.println("End");
 	}

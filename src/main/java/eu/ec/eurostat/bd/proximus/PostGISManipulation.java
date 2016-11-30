@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.TopologyException;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -105,7 +106,7 @@ public class PostGISManipulation {
 							if(geom2 == null) continue;
 							double interArea = geom1.intersection(geom2).getArea();
 
-							//if(interArea<30) continue;
+							if(interArea<0.01) continue;
 
 							double a1 = geom1.getArea(), r1 = interArea/a1;
 							double a2 = geom2.getArea(), r2 = interArea/a2;
@@ -123,6 +124,9 @@ public class PostGISManipulation {
 							}
 						} catch (ParseException e1) {
 							System.out.println("Could not parse "+geomS2);
+							e1.printStackTrace();
+						} catch (TopologyException e1) {
+							System.out.println("Topology problem");
 							e1.printStackTrace();
 						}
 					}
