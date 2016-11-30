@@ -45,7 +45,7 @@ public class PostGISManipulation {
 
 		//handle intersecting buildings
 		handleIntersectingBuildings(c, "bu_be_housing");
-		//handleIntersectingBuildings(c, "bu_be");
+		handleIntersectingBuildings(c, "bu_be");
 
 		//TODO export shp
 		//TODO run
