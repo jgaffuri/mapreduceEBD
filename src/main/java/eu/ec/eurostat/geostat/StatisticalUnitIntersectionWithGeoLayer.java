@@ -238,14 +238,24 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 					//get geo geometry
 					Geometry geoGeom = (Geometry) geo.getDefaultGeometryProperty().getValue();
-					if(!geoGeom.intersects(statGeom)) continue;
+					try {
+						if(!geoGeom.intersects(statGeom)) continue;
+					} catch (TopologyException e) {
+						System.err.println("Topology error.");
+						continue;
+					}
 
 					//get geo value
 					String geoValue = geoValues.get(geoId);
 					if(geoValue == null || Double.parseDouble(geoValue) == 0) continue;
 
 					nbGeos++;
-					statValue += geoGeom.intersection(statGeom).getArea() / geoGeom.getArea() * Double.parseDouble(geoValue);
+					try {
+						statValue += geoGeom.intersection(statGeom).getArea() / geoGeom.getArea() * Double.parseDouble(geoValue);
+					} catch (TopologyException e) {
+						System.err.println("Topology error.");
+						continue;
+					}
 				}
 				itGeo.close();
 
