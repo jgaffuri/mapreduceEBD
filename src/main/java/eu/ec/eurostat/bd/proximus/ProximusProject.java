@@ -51,12 +51,12 @@ public class ProximusProject {
 		//assess the building quantity for each grid cell
 		//StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, gridBuildingStats);
 		//STEP 1-2. assess the building quantity for each voronoi cell
-		//StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoiBuildingStats);
+		StatisticalUnitIntersectionWithGeoLayer.aggregateGeoStatsFromGeoToStatisticalUnits(PROXIMUS_VORONOI, "voronoi_id", BUILDINGS_SHP_PATH, voronoiBuildingStats);
 
 		//assess the building density based on grid pop
 		//StatisticalUnitIntersectionWithGeoLayer.computeGeoStatValueFromStatUnitValue(BUILDINGS_SHP_PATH, "OBJECTID", GEOSTAT_GRID_PATH, "CELLCODE", GEOSTAT_POP_PATH, gridBuildingStats, buildingDensityFromGrid);
 		//STEP 3. assess the building density based on voronoi pop
-		//StatisticalUnitIntersectionWithGeoLayer.allocateGeoStatsFromStatisticalUnitsToGeo(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", PROXIMUS_VORONOI_POP_PATH, voronoiBuildingStats, buildingDensityFromVoronoi);
+		StatisticalUnitIntersectionWithGeoLayer.allocateGeoStatsFromStatisticalUnitsToGeo(BUILDINGS_SHP_PATH, "OBJECTID", PROXIMUS_VORONOI, "voronoi_id", PROXIMUS_VORONOI_POP_PATH, voronoiBuildingStats, buildingDensityFromVoronoi);
 
 		//compare building densities - see discrepencies and possibly enrich model to reduce it (further)
 

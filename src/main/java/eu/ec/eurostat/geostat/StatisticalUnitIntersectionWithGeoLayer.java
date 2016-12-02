@@ -18,6 +18,9 @@ import org.opengis.filter.FilterFactory2;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.TopologyException;
 
+import eu.ec.estat.java4eurostat.base.StatsHypercube;
+import eu.ec.estat.java4eurostat.base.StatsIndex;
+import eu.ec.estat.java4eurostat.io.CSV;
 import eu.ec.estat.java4eurostat.io.DicUtil;
 import eu.ec.eurostat.io.ShapeFile;
 
@@ -61,11 +64,11 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				String statUnitId = statUnit.getAttribute(statUnitIdField).toString();
 				System.out.println(statUnitId + " " + (statCounter++) + "/" + nbStats + " " + (Math.round(10000*statCounter/nbStats))*0.01 + "%");
 
-				//get all geo intersecting the stat unit (with spatial index)
+				//get all geo features intersecting the stat unit (with spatial index)
 				Geometry StatUnitGeom = (Geometry) statUnit.getDefaultGeometryProperty().getValue();
 				FeatureIterator<SimpleFeature> itGeo = geoShp.getFeatures(statUnit.getBounds(), "the_geom", ff);
 
-				//compute stat on geo: total area/volume, number, building size distribution
+				//compute stat on geo features: total area/volume, number, building size distribution
 				int nbGeo=0; double totalArea=0, totalLength=0;
 				while (itGeo.hasNext()) {
 					try {
@@ -87,6 +90,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				if(nbGeo == 0) continue;
 
 				//store
+				//"id,number,area,length,area_density,length_density");
 				String line = statUnitId+","+nbGeo+","+totalArea+","+totalLength+","+totalArea/StatUnitGeom.getArea()+","+totalLength/StatUnitGeom.getArea();
 				System.out.println(line);
 				bw.write(line);
@@ -115,12 +119,13 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 	public static void allocateGeoStatsFromStatisticalUnitsToGeo(String geoSHPFile, String geoIdField, String statUnitsSHPFile, String statUnitsIdField, String statUnitValuesPath, String statUnitGeoStatValuesPath, String geoOutFile) {
 		try {
 			//create out file
+
 			File outFile_ = new File(geoOutFile);
 			if(outFile_.exists()) outFile_.delete();
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outFile_, true));
 
 			//write header
-			bw.write(geoIdField+",value,pop,density,_nbStatUnitIntersecting");
+			bw.write(geoIdField+",value,density,_nbStatUnitIntersecting");
 			bw.newLine();
 
 			//open geo and statistical units shapefiles
@@ -131,16 +136,24 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 
 			//load stat unit values
 			HashMap<String, String> statUnitValue = DicUtil.load(statUnitValuesPath, ",");
-			//load stat unit geostat values
-			HashMap<String, String> statUnitGeoTotalArea = DicUtil.load(statUnitGeoStatValuesPath, ",");
+
+			//load stat unit geostat values - area
+			StatsHypercube statUnitGeoStatValues_ = CSV.load(statUnitGeoStatValuesPath, "area");
+			statUnitGeoStatValues_.delete("number");
+			statUnitGeoStatValues_.delete("length");
+			statUnitGeoStatValues_.delete("area_density");
+			statUnitGeoStatValues_.delete("length_density");
+			StatsIndex statUnitGeoStatValues = new StatsIndex(statUnitGeoStatValues_,"voronoi_id");
+			statUnitGeoStatValues_ = null;
+
 
 			//go through geo - purpose is to compute geo pop/density
 			FeatureIterator<SimpleFeature> itGeo = geoShp.getFeatures();
-			int geoCounter = 1;
+			double geoCounter = 1;
 			while (itGeo.hasNext()) {
 				SimpleFeature geoUnit = itGeo.next();
 				String geoId = geoUnit.getAttribute(geoIdField).toString();
-				System.out.println(geoId + " " + (geoCounter++) + "/" + nbGeo + " " + (Math.round(10000*geoCounter/nbGeo))*0.01 + "%");
+				System.out.println(geoId + " " + (geoCounter++) + "/" + nbGeo + " " + (Math.round(10000.0*geoCounter/nbGeo)*0.01) + "%");
 
 				Geometry geoGeom = (Geometry) geoUnit.getDefaultGeometryProperty().getValue();
 
@@ -151,29 +164,25 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				double geoStatValue = 0;
 				//geoStatValue = Sum on SUs intersecting of:  surf(geo inter su)/statUnitGeoTotalArea * statUnitValue
 				while (itStat.hasNext()) {
-					SimpleFeature stat = itStat.next();
-					String statId = stat.getAttribute(statUnitsIdField).toString();
-
-					//get stat unit geometry
-					Geometry statUnitGeom = (Geometry) stat.getDefaultGeometryProperty().getValue();
 					try {
+						SimpleFeature stat = itStat.next();
+						String statId = stat.getAttribute(statUnitsIdField).toString();
+
+						//get stat unit geometry
+						Geometry statUnitGeom = (Geometry) stat.getDefaultGeometryProperty().getValue();
 						if(!geoGeom.intersects(statUnitGeom)) continue;
-					} catch (TopologyException e) {
-						System.err.println("Topology error.");
-						continue;
-					}
 
-					//get stat unit value
-					String statValue = statUnitValue.get(statId);
-					if(statValue == null || Double.parseDouble(statValue) == 0) continue;
+						nbStat++;
 
-					//get stat unit geo total area
-					String statGeoTot = statUnitGeoTotalArea.get(statId);
-					if(statGeoTot == null || Double.parseDouble(statGeoTot) == 0) continue;
+						//get stat unit value
+						String statValue = statUnitValue.get(statId);
+						if(statValue == null || Double.parseDouble(statValue) == 0) continue;
 
-					nbStat++;
-					try {
-						geoStatValue += geoGeom.intersection(statUnitGeom).getArea() / Double.parseDouble(statGeoTot) * Double.parseDouble(statValue);
+						//get stat unit geostat values
+						double statUnitGeoStatValue = statUnitGeoStatValues.getSingleValue(statId);
+						if(Double.isNaN(statUnitGeoStatValue) || statUnitGeoStatValue == 0) continue;
+
+						geoStatValue += geoGeom.intersection(statUnitGeom).getArea() / statUnitGeoStatValue * Double.parseDouble(statValue);
 					} catch (TopologyException e) {
 						System.err.println("Topology error.");
 					}
@@ -183,6 +192,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				if(nbStat == 0) continue;
 
 				//store
+				//bw.write(geoIdField+",value,density,_nbStatUnitIntersecting");
 				String line = geoId+","+geoStatValue+","+geoStatValue/geoGeom.getArea()+","+nbStat;
 				System.out.println(line);
 				bw.write(line);
@@ -233,24 +243,20 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				double statValue = 0;
 				//statValue = Sum on geos intersecting of:  surf(geo inter su)/surf(geo) * geoValue
 				while (itGeo.hasNext()) {
-					SimpleFeature geo = itGeo.next();
-					String geoId = geo.getAttribute(geoIdField).toString();
-
-					//get geo geometry
-					Geometry geoGeom = (Geometry) geo.getDefaultGeometryProperty().getValue();
 					try {
+						SimpleFeature geo = itGeo.next();
+						String geoId = geo.getAttribute(geoIdField).toString();
+
+						//get geo feature geometry
+						Geometry geoGeom = (Geometry) geo.getDefaultGeometryProperty().getValue();
 						if(!geoGeom.intersects(statGeom)) continue;
-					} catch (TopologyException e) {
-						System.err.println("Topology error.");
-						continue;
-					}
 
-					//get geo value
-					String geoValue = geoValues.get(geoId);
-					if(geoValue == null || Double.parseDouble(geoValue) == 0) continue;
+						nbGeos++;
 
-					nbGeos++;
-					try {
+						//get geo value
+						String geoValue = geoValues.get(geoId);
+						if(geoValue == null || Double.parseDouble(geoValue) == 0) continue;
+
 						statValue += geoGeom.intersection(statGeom).getArea() / geoGeom.getArea() * Double.parseDouble(geoValue);
 					} catch (TopologyException e) {
 						System.err.println("Topology error.");
