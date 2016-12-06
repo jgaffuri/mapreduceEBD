@@ -9,6 +9,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.postgresql.util.PSQLException;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.TopologyException;
 import com.vividsolutions.jts.io.ParseException;
@@ -41,8 +43,8 @@ public class PostGISManipulation {
 		//removeWallonyDuplicates(c);
 
 		//add spatial index
-		//if (PGUtil.createSpatialIndex(c, "bu_be_housing")) System.out.println("Spatial index created"); else System.err.println("Spatial index NOT created");
-		//if (PGUtil.createSpatialIndex(c, "bu_be")) System.out.println("Spatial index created"); else System.err.println("Spatial index NOT created");
+		//PGUtil.createSpatialIndex(c, "bu_be_housing");
+		//PGUtil.createSpatialIndex(c, "bu_be");
 		//PGUtil.createIndex(c,"bu_be_housing","gid");
 
 		//handle intersecting buildings
@@ -147,6 +149,8 @@ public class PostGISManipulation {
 							//e1.printStackTrace();
 						}
 					}
+				} catch (PSQLException e) {
+					e.printStackTrace();
 				} finally { st.close(); }
 			} catch (Exception e) { e.printStackTrace(); }
 		}
