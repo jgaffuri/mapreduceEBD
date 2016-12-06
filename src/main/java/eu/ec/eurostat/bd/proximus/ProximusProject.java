@@ -67,8 +67,10 @@ public class ProximusProject {
 		//STEP 4. aggregate building voronoi/population to grid
 		StatisticalUnitIntersectionWithGeoLayer.aggregateStatValueFomGeoValues(GEOSTAT_GRID_PATH, "CELLCODE", BUILDINGS_SHP_PATH, "OBJECTID", buildingDensityFromVoronoi, BASE_PATH_ + "grid_pop_from_building_pop_from_voronoi.csv");
 
+
 		//compare with proximus computes grid population
 		//compare with initial grid population
+
 
 		System.out.println("End");
 	}
