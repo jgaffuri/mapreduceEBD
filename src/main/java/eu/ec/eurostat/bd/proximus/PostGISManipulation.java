@@ -41,6 +41,7 @@ public class PostGISManipulation {
 		//removeWallonyDuplicates(c);
 
 		//add spatial index
+		//if (PGUtil.createSpatialIndex(c, "bu_be_housing")) System.out.println("Spatial index created"); else System.err.println("Spatial index NOT created");
 		//if (PGUtil.createSpatialIndex(c, "bu_be")) System.out.println("Spatial index created"); else System.err.println("Spatial index NOT created");
 		//PGUtil.createIndex(c,"bu_be_housing","gid");
 
