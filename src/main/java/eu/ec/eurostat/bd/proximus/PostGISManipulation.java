@@ -45,7 +45,7 @@ public class PostGISManipulation {
 		//PGUtil.createIndex(c,"bu_be_housing","gid");
 
 		//handle intersecting buildings
-		//handleIntersectingBuildings(c, "bu_be_housing");
+		handleIntersectingBuildings(c, "bu_be_housing");
 		handleIntersectingBuildings(c, "bu_be");
 
 		/*
@@ -61,6 +61,7 @@ public class PostGISManipulation {
 
 	public static void handleIntersectingBuildings(Connection c, String tableName){
 		//9479080
+		//housing: 4576608
 		/*/should be the same
 		System.out.println(PGUtil.getValues(c, tableName, "gid", false).size());
 		System.out.println(PGUtil.getValues(c, tableName, "gid", true).size());*/
@@ -73,8 +74,11 @@ public class PostGISManipulation {
 		int nb = gids.size();
 		System.out.println(tableName + ": " + nb);
 
+		//go through list of features
 		int i=1;
 		for(String gid1 : gids){
+
+			//get geometry of object
 			i++;
 			String geomS1 = null;
 			try {
@@ -92,20 +96,32 @@ public class PostGISManipulation {
 			}
 			if(geom1 == null) continue;
 			//System.out.println(gid1 + " - " + geom1);
+
+			//clean geometry
+			geom1 = geom1.buffer(0);
+
 			try {
 				Statement st = c.createStatement();
 				try {
-					//get all buildings intersecting geom1
+					//get all objects intersecting geom1
 					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE gid!="+gid1+" AND ST_Intersects(geom,ST_GeomFromText('"+geom1+"',3035))");
+
 					while (res.next()) {
+						//get geometry of intersecting object
 						int gid2 = res.getInt(1);
 						String geomS2 = res.getString(2);
 						try {
 							if(geomS2 == null) continue;
 							Geometry geom2 = wkt.read(geomS2);
 							if(geom2 == null) continue;
+
+							//clean geometry
+							geom2 = geom2.buffer(0);
+
+							//compute intersection area
 							double interArea = geom1.intersection(geom2).getArea();
 
+							//if intersection area too small, skip
 							if(interArea<0.01) continue;
 
 							double a1 = geom1.getArea(), r1 = interArea/a1;
@@ -135,21 +151,22 @@ public class PostGISManipulation {
 		}
 	}
 
-	public static void removeWallonyDuplicates(Connection c){
+	//public static void removeWallonyDuplicates(Connection c){
 
-		/*/check ids
+	/*
+		//check ids
 		System.out.println(PGUtil.getValues(c, "bu_be_wa", "objectid", true).size());
 		System.out.println(PGUtil.getValues(c, "bu_be_wa", "objectid", false).size());
 		System.out.println(PGUtil.getValues(c, "bu_be_wa", "gid", true).size());
 		System.out.println(PGUtil.getValues(c, "bu_be_wa", "gid", false).size());*/
 
-		//remove duplicates of objectid - use gid as true id
+	//remove duplicates of objectid - use gid as true id
 
-		//create indexes
-		//System.out.println( PGUtil.createIndex(c, "bu_be_wa", "objectid") );
-		//System.out.println( PGUtil.createIndex(c, "bu_be_wa", "gid") ); useless: there is already an index for this column
+	//create indexes
+	//System.out.println( PGUtil.createIndex(c, "bu_be_wa", "objectid") );
+	//System.out.println( PGUtil.createIndex(c, "bu_be_wa", "gid") ); useless: there is already an index for this column
 
-		/*
+	/*
 		ArrayList<String> objectids = PGUtil.getValues(c, "bu_be_wa", "objectid", true);
 		System.out.println(objectids.size());
 		for(String objectid : objectids){
@@ -161,6 +178,6 @@ public class PostGISManipulation {
 			gids.remove(0); //to ensure one is kept
 			for(String gid : gids) PGUtil.executeStatement(c, "DELETE FROM bu_be_wa WHERE gid='"+gid+"'");
 		}*/
-	}
+	//}
 
 }
