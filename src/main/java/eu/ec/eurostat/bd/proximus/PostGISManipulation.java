@@ -48,8 +48,10 @@ public class PostGISManipulation {
 		//PGUtil.createIndex(c,"bu_be_housing","gid");
 
 		//handle intersecting buildings
-		handleIntersectingBuildings(c, "bu_be_housing");
-		handleIntersectingBuildings(c, "bu_be");
+		//handleIntersectingBuildings(c, "bu_be_housing");
+		//handleIntersectingBuildings(c, "bu_be");
+		//DELETE FROM bu_be_housing WHERE gid NOT IN (select max(dup.gid) from bu_be_housing as dup group by geom);
+		//DELETE FROM bu_be WHERE gid NOT IN (select max(dup.gid) from bu_be as dup group by geom);
 
 		/*
 		for(String table : tables){
@@ -83,12 +85,17 @@ public class PostGISManipulation {
 
 			//get geometry of object
 			i++;
+			Object geomS1_ = null;
 			String geomS1 = null;
 			try {
 				Statement st = c.createStatement();
 				try {
-					ResultSet res = st.executeQuery("SELECT ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE gid='"+gid1+"';");
-					if(res.next()) geomS1 = res.getString(1);
+					ResultSet res = st.executeQuery("SELECT geom,ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE gid='"+gid1+"';");
+					//System.out.println("SELECT geom,ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE gid='"+gid1+"';");
+					if(res.next()){
+						geomS1_ = res.getObject(1);
+						geomS1 = res.getString(2);
+					}
 				} finally { st.close(); }
 			} catch (Exception e) { e.printStackTrace(); }
 			if(geomS1 == null) continue;
@@ -97,8 +104,15 @@ public class PostGISManipulation {
 				System.out.println("Could not parse "+geomS1);
 				e.printStackTrace();
 			}
-			if(geom1 == null) continue;
-			//System.out.println(gid1 + " - " + geom1);
+
+			//System.out.println(gid1);
+			//System.out.println(geomS1_);
+			//System.out.println(geom1);
+
+			if(geom1 == null) {
+				System.err.println("Null geometry for gid="+gid1);
+				continue;
+			}
 
 			//clean geometry
 			geom1 = geom1.buffer(0);
@@ -107,7 +121,8 @@ public class PostGISManipulation {
 				Statement st = c.createStatement();
 				try {
 					//get all objects intersecting geom1
-					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE gid!="+gid1+" AND ST_Intersects(geom,ST_GeomFromText('"+geom1+"',3035))");
+					ResultSet res = st.executeQuery("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE ST_Intersects(geom,'"+geomS1_+"') AND gid!='"+gid1+"';");
+					//System.out.println("SELECT gid,ST_AsText(ST_Force2D(geom)) FROM "+tableName+" WHERE ST_Intersects(geom,'"+geomS1_+"') AND gid!='"+gid1+"';");
 
 					while (res.next()) {
 						//get geometry of intersecting object
