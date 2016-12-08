@@ -50,6 +50,13 @@ public class PostGISManipulation {
 		//handle intersecting buildings
 		//handleIntersectingBuildings(c, "bu_be_housing");
 		//handleIntersectingBuildings(c, "bu_be");
+		double xmin=3800000,xmax=4070000,ymin=2930000,ymax=3100000, res=1000;
+		int nb = (int)((xmax-xmin)/res * (ymax-ymin)/res), i=0;
+		for(double x=xmin; x<xmax; x+=res)
+			for(double y=ymin; y<ymax; y+=res) {
+				System.out.println((i++)+"/"+nb+"      "+x+" "+y);
+				deleteDuplicates(c, "bu_be_housing", x, x+res, y, y+res);
+			}
 		//DELETE FROM bu_be_housing WHERE gid NOT IN (select max(dup.gid) from bu_be_housing as dup group by geom);
 		//DELETE FROM bu_be WHERE gid NOT IN (select max(dup.gid) from bu_be as dup group by geom);
 
@@ -64,9 +71,26 @@ public class PostGISManipulation {
 		System.out.println("End");
 	}
 
+	private static boolean deleteDuplicates(Connection c, String table, double xMin, double xMax, double yMin, double yMax) {
+		boolean b = false;
+		try {
+			Statement st = c.createStatement();
+			String qu = "DELETE FROM " + table + " WHERE "
+					+ "st_intersects(geom,ST_MakeEnvelope("+xMin+","+yMin+","+xMax+","+yMax+",3035)) "
+					+ "AND "
+					+ "gid NOT IN ("
+					+ "select max(dup.gid) from "+table+" as dup WHERE st_intersects(geom,ST_MakeEnvelope("+xMin+","+yMin+","+xMax+","+yMax+",3035)) group by geom"
+					+ ");";
+			System.out.println(qu);
+			try { b = st.execute(qu); } catch (Exception e) { e.printStackTrace(); }
+			finally { st.close(); }
+		} catch (Exception e) { e.printStackTrace(); }
+		return b;
+	}
+
 	public static void handleIntersectingBuildings(Connection c, String tableName){
 		//9479080
-		//housing: 4576608
+		//housing: 4554193
 		/*/should be the same
 		System.out.println(PGUtil.getValues(c, tableName, "gid", false).size());
 		System.out.println(PGUtil.getValues(c, tableName, "gid", true).size());*/
