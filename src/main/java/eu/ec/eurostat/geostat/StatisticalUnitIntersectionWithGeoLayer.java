@@ -265,7 +265,7 @@ public class StatisticalUnitIntersectionWithGeoLayer {
 				}
 				itGeo.close();
 
-				if(nbGeos == 0) continue;
+				//if(nbGeos == 0) continue;
 
 				//store
 				String line = statUnitId+","+statValue+","+statValue/statGeom.getArea()+","+nbGeos;
