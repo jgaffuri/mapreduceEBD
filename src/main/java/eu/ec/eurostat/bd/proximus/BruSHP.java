@@ -14,13 +14,15 @@ public class BruSHP {
 		System.out.println("Start");
 
 
-		String folder = "H:/geodata/BE_bruxelles_urbis/adm_3d/";
+		String folder = "H:/geodata/BE_bruxelles/adm_3d/";
 		ArrayList<File> files = getFiles(new File(folder));
 
 		for(File f : files){
 			String c = f.getName().replaceAll("UrbAdm3D_", "").replaceAll("_SHP.zip", "");
 			//System.out.println(c);
-			System.out.println("shp2pgsql -a -s 31370:3035 workspace_postgis/bru/"+c+"/UrbAdm_Bu_Ground_3D.shp BU_BE_BRU");
+			//System.out.println("shp2pgsql -a -s 31370:3035 workspace_postgis/bru/"+c+"/UrbAdm_Bu_Ground_3D.shp BU_BE_BRU_GROUND");
+			System.out.print(" && shp2pgsql -a -s 31370:3035 workspace_postgis/bru/"+c+"/UrbAdm_Bu_Ground_3D.shp BU_BE_BRU_GROUND | psql -h s-estat-bgdnode-05 -d postgisdb -U postgis");
+			System.out.print(" && shp2pgsql -a -s 31370:3035 workspace_postgis/bru/"+c+"/UrbAdm_Bu_Roof_3D.shp BU_BE_BRU_ROOF | psql -h s-estat-bgdnode-05 -d postgisdb -U postgis");
 			//unZip(f.getAbsolutePath(), folder+"unzipped/"+c);
 		}
 
