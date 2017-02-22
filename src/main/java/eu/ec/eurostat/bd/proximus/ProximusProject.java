@@ -8,8 +8,6 @@ import java.net.MalformedURLException;
 
 import org.geotools.data.shapefile.shp.ShapefileException;
 
-import eu.ec.eurostat.geostat.StatisticalUnitIntersectionWithGeoLayer;
-
 /**
  * @author julien Gaffuri
  *
