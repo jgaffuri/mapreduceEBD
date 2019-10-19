@@ -8,8 +8,6 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 
-import eu.ec.eurostat.bd.Config;
-
 /**
  * @author julien Gaffuri
  *

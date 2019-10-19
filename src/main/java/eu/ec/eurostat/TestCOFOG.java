@@ -1,10 +1,10 @@
 package eu.ec.eurostat;
 
-import eu.ec.estat.java4eurostat.base.Selection;
-import eu.ec.estat.java4eurostat.base.Stat;
-import eu.ec.estat.java4eurostat.base.StatsHypercube;
-import eu.ec.estat.java4eurostat.io.EurobaseIO;
-import eu.ec.estat.java4eurostat.io.EurostatTSV;
+import eu.europa.ec.eurostat.java4eurostat.base.Selection;
+import eu.europa.ec.eurostat.java4eurostat.base.Stat;
+import eu.europa.ec.eurostat.java4eurostat.base.StatsHypercube;
+import eu.europa.ec.eurostat.java4eurostat.io.EurobaseIO;
+import eu.europa.ec.eurostat.java4eurostat.io.EurostatTSV;
 
 public class TestCOFOG {
 

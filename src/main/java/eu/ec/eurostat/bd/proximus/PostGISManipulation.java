@@ -3,6 +3,7 @@
  */
 package eu.ec.eurostat.bd.proximus;
 
+import java.io.ObjectInputFilter.Config;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -16,9 +17,8 @@ import com.vividsolutions.jts.geom.TopologyException;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-import eu.ec.eurostat.bd.Config;
-import eu.ec.eurostat.io.postgis.PGConnection;
-import eu.ec.eurostat.io.postgis.PGUtil;
+import eu.europa.ec.eurostat.jgiscotools.io.postgis.PGConnection;
+import eu.europa.ec.eurostat.jgiscotools.io.postgis.PGUtil;
 
 /**
  * @author gaffuju
