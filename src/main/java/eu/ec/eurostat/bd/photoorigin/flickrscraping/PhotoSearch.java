@@ -9,9 +9,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import eu.europa.ec.eurostat.java4eurostat.io.IOUtil;
-import eu.europa.ec.eurostat.jgiscotools.io.ScrapingScheduler;
-import eu.europa.ec.eurostat.jgiscotools.io.ScrapingScheduler.Function;
-import eu.europa.ec.eurostat.jgiscotools.io.ScrapingScheduler.QueryType;
+import eu.europa.ec.eurostat.jgiscotools.io.web.ScrapingScheduler;
+import eu.europa.ec.eurostat.jgiscotools.io.web.ScrapingScheduler.Function;
+import eu.europa.ec.eurostat.jgiscotools.io.web.ScrapingScheduler.QueryType;
 
 /**
  * @author Julien Gaffuri

@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import eu.ec.eurostat.bd.geonames.GeoNameEntry;
-import eu.ec.eurostat.bd.geonames.LevenshteinDistance;
+import eu.europa.ec.eurostat.jgiscotools.algo.matching.LevenshteinMatching;
 
 /**
  * @author julien gaffuri
@@ -27,7 +27,7 @@ public class SearchMapper extends Mapper<LongWritable, Text, IntWritable, Text> 
 		ArrayList<String> names = new GeoNameEntry(line).getNames(true);
 		int dist = 99999;
 		for(String name : names)
-			dist = Math.min(dist, LevenshteinDistance.get(searchTerm, name));
+			dist = Math.min(dist, LevenshteinMatching.getLevenshteinDistance(searchTerm, name, true, true, true, true));
 
 		if(dist>10) return;
 		//TODO
